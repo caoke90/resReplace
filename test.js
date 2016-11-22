@@ -12,7 +12,7 @@ var test=eval(Wind.compile("async", function (zhiling,filepath) {
     if(zhiling.indexOf("b")>-1) {
         /*inline Test*/
         $await(resAsync("test/**.js", inline()));
-        $await(resAsync("test/**.js", inline("txt")));
+        $await(resAsync("test/**.js", inline("intxt")));
     }
     if(zhiling.indexOf("a")>-1){
         /*replace Test*/

@@ -1,1 +1,1 @@
-﻿var txt=__inline("url2.js");
+﻿var txt= __intxt("url2.js");

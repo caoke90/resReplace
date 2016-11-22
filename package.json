@@ -1,0 +1,19 @@
+{
+  "name": "resReplace",
+  "version": "1.0.0",
+  "description": "文件内容替换工具",
+  "main": "app.js",
+  "dependencies": {
+    "glob": "^7.1.1",
+    "wind": "^0.7.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "node app"
+  },
+  "keywords": [
+    "文件内容替换工具"
+  ],
+  "author": "曹科",
+  "license": "ISC"
+}

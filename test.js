@@ -5,7 +5,6 @@ var resAsync=require("./res");
 
 var jsonFormat=require("./jsonFormat.res")
 var inline=require("./inline.res")
-var inlineTxt=require("./inlineTxt.res")
 var replace=require("./strToStr.res")
 
 
@@ -13,6 +12,7 @@ var test=eval(Wind.compile("async", function (zhiling,filepath) {
     if(zhiling.indexOf("b")>-1) {
         /*inline Test*/
         $await(resAsync("test/**.js", inline()));
+        $await(resAsync("test/**.js", inline("txt")));
     }
     if(zhiling.indexOf("a")>-1){
         /*replace Test*/

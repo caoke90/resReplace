@@ -10,6 +10,7 @@ var copy=require("./copy")
 
 
 var test=eval(Wind.compile("async", function (zhiling,filepath) {
+
     if(zhiling.indexOf("b")>-1) {
         /*inline Test*/
         $await(res("test/**.js", inline()));

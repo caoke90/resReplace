@@ -36,7 +36,7 @@ var test=eval(Wind.compile("async", function (zhiling,filepath) {
     }
     if(zhiling.indexOf("f")>-1) {
         //格式化json
-        $await(copy("test/**", "../test2"))
+        $await(copy("test/**", "release"));
     }
 }))
 test("f").start()

@@ -22,6 +22,7 @@ var copy=eval(Wind.compile("async", function (regStr,dirname) {
 
     for(var i=0;i<files.length;i++){
         var file=files[i];
+
         var npath=path.join(dirname,file);
         mkdir(path.dirname(npath));
         fs.writeFileSync(npath,fs.readFileSync(file));

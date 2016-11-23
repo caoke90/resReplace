@@ -6,7 +6,7 @@ Wind.logger.level = Wind.Logging.Level.WARN;
 var glob = require("glob")
 
 //地址不变的内容替换
-res=eval(Wind.compile("async", function (regStr,replaceBack) {
+var res=eval(Wind.compile("async", function (regStr,replaceBack) {
     var replace=Wind.Async.Binding.fromCallback(replaceBack)
     var files=glob.sync(regStr,{nodir:true})
     console.log(files)
@@ -23,6 +23,3 @@ res=eval(Wind.compile("async", function (regStr,replaceBack) {
     }
 }))
 module.exports=res;
-
-
-

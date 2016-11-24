@@ -16,14 +16,14 @@ function mkdir(filepath){
 }
 
 //地址不变的内容替换
-var copy=eval(Wind.compile("async", function (regStr,dirname) {
+var copy=eval(Wind.compile("async", function (regStr,reg1,reg2) {
 
     var files=glob.sync(regStr,{nodir:true})
 
     for(var i=0;i<files.length;i++){
         var file=files[i];
 
-        var npath=path.join(dirname,file);
+        var npath=file.replace(reg1,reg2);
         mkdir(path.dirname(npath));
         fs.writeFileSync(npath,fs.readFileSync(file));
     }

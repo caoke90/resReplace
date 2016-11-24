@@ -1,1 +1,12 @@
-﻿var txt= __intxt("url2.js");
+﻿var txt= 
+{
+  "a": 21,
+  "b": 22
+};
+d;
+d
+d
+d
+d
+d
+"sdfsdf"+"sdfsdf";

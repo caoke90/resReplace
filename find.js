@@ -6,10 +6,9 @@ Wind.logger.level = Wind.Logging.Level.WARN;
 var glob = require("glob")
 
 //地址不变的内容替换
-var find=eval(Wind.compile("async", function (regStr,params1) {
+var search=eval(Wind.compile("async", function (regStr,params1) {
     if(Object.prototype.toString.call(params1)!="[object Array]"){
         params1=[params1]
-        params2=[params2]
     }
     for(var k=0;k<params1.length;k++) {
         var p1 = params1[k];
@@ -39,5 +38,5 @@ var find=eval(Wind.compile("async", function (regStr,params1) {
     }
     return hasChange
 }))
-module.exports=find;
+module.exports=search;
 //console.log(replace("test/*","sdfsdf","abcdef").start())

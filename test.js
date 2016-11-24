@@ -5,44 +5,51 @@ var path=require("path")
 var copy=require("./copy")
 var replace=require("./replace");
 var find=require("./find");
+var search=require("./search");
 
 var test=eval(Wind.compile("async", function (modeArr2) {
     //组件
-//    var modeArr=[
-//        //json格式化
-//        [/^[\d\D]+$/,function(m){
-//            try{
-//                var obj=JSON.parse(m)
-//                m=JSON.stringify(obj,null,2)
-//            }catch(e){}
-//            return m
-//        }],
-//        //inline替换
-//        [/__inline\((.+?)\)/g,function(m,p1){
-//            var path1=p1.replace(/["']/g,"");
-//            var dirname=path.dirname(this.filepath)
-//            var filepath1=path.join(dirname,path1)
-//            var str=fs.readFileSync(filepath1).toString().replace(/﻿/,"")
-//            str=this._super(str,filepath1)
-//            return str
-//        }],
-//        //__intxt替换
-//        [/__intxt\((.+?)\)/g,function(m,p1){
-//            var path1=p1.replace(/["']/g,"");
-//            var dirname=path.dirname(this.filepath)
-//            var filepath1=path.join(dirname,path1)
-//            var str=fs.readFileSync(filepath1).toString().replace(/﻿/,"")
-//            str=this._super(str,filepath1)
-//            return "'"+str.replace(/\s/g,"").replace(/'/g,'\\')+"'";
-//        }],
-//    ]
-//
-//    for(var i=0;i<modeArr.length;i++){
-//        var item=modeArr[i]
-//        var cgArr=$await(replace("../zufangdai_stat_data/admin-src/**",item[0],item[1]))
-//        console.log(cgArr)
-//    }
+    var modeArr=[
+        //json格式化
+        [/^[\d\D]+$/,function(m){
+            try{
+                var obj=JSON.parse(m)
+                m=JSON.stringify(obj,null,2)
+            }catch(e){}
+            return m
+        }],
+        //inline替换
+        [/__inline\((.+?)\)/g,function(m,p1){
+            var path1=p1.replace(/["']/g,"");
+            var dirname=path.dirname(this.filepath)
+            var filepath1=path.join(dirname,path1)
+            var str=fs.readFileSync(filepath1).toString().replace(/﻿/,"")
+            str=this._super(str,filepath1)
+            return str
+        }],
+        //__intxt替换
+        [/__intxt\((.+?)\)/g,function(m,p1){
+            var path1=p1.replace(/["']/g,"");
+            var dirname=path.dirname(this.filepath)
+            var filepath1=path.join(dirname,path1)
+            var str=fs.readFileSync(filepath1).toString().replace(/﻿/,"")
+            str=this._super(str,filepath1)
+            return "'"+str.replace(/\s/g,"").replace(/'/g,'\\')+"'";
+        }]
+    ]
 
+    for(var i=0;i<modeArr.length;i++){
+        var item=modeArr[i]
+        var cgArr=$await(replace("../zufangdai_stat_data/admin-src/**",item[0],item[1]))
+        console.log(cgArr)
+    }
+
+
+}))
+
+//test().start()
+
+var test2=eval(Wind.compile("async", function (modeArr2) {
     var conf=fs.readFileSync("test/url2.txt").toString()
     var arr1=[]
     var arr2=[]
@@ -55,6 +62,7 @@ var test=eval(Wind.compile("async", function (modeArr2) {
 //    console.log(arr2)
 //    var cgArr=$await(replace("../zufangdai_stat_data/admin-src/**",arr1,arr2))
 //    console.log(cgArr)
+    //查找
     var arr3=[]
     conf.replace(/\/.+/g,function(m,p){
         arr3.push(m.replace(/#.+/,""))
@@ -62,8 +70,15 @@ var test=eval(Wind.compile("async", function (modeArr2) {
     console.log(arr3)
     var cgArr=$await(find("../zufangdai_stat_data/admin-src/**",arr3))
     console.log(cgArr)
+
 }))
+//test2().start()
 
-test().start()
 
-
+var test3=eval(Wind.compile("async", function () {
+    var cgArr=$await(search("http://www.cnblogs.com/fengmk2/archive/2011/05/15/2047109.html",["<title>(*)<","问题:*"]))
+    console.log(cgArr)
+    var cgArr=$await(search("test/url2.txt",[/([a-z\/-]+)#([a-z\/-]+)/gi]))
+    console.log(cgArr)
+}))
+test3().start()

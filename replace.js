@@ -4,23 +4,23 @@ var Wind=require("wind")
 Wind.logger.level = Wind.Logging.Level.WARN;
 
 var glob = require("glob")
-
-//地址不变的内容替换
-var replace=eval(Wind.compile("async", function (regStr,params1,params2) {
-    if(Object.prototype.toString.call(params1)!="[object Array]"){
-        params1=[params1]
-        params2=[params2]
+function strToTeg(p1){
+    //字符转正则
+    if (typeof p1 == "string") {
+        p1 = p1.replace(/[\(\)\[\]\\\*\^\:\.\+\/]/g, function (m) {
+            return "\\" + m;
+        })
+        p1 = new RegExp(p1, "g")
     }
-    for(var k=0;k<params1.length;k++) {
-        var p1 = params1[k];
-        //字符转正则
-        if (typeof p1 == "string") {
-            p1 = p1.replace(/[\(\)\[\]\\\*\^\:\.\+\/]/g, function (m) {
-                return "\\" + m;
-            })
-            p1 = new RegExp(p1, "g")
-        }
-        params1[k]=p1;
+    return p1;
+}
+//地址不变的内容替换
+var replace=eval(Wind.compile("async", function (regStr,modeArr) {
+    if(Object.prototype.toString.call(modeArr[0])!="[object Array]"){
+        modeArr=[modeArr]
+    }
+    for(var i=0;i<modeArr.length;i++) {
+        modeArr[i][0]=strToTeg(modeArr[i][0]);
     }
     var files=glob.sync(regStr,{nodir:true})
 
@@ -30,9 +30,9 @@ var replace=eval(Wind.compile("async", function (regStr,params1,params2) {
         var buff=fs.readFileSync(filepath)
         var content=buff.toString();
         var ncontent=content;
-        for(var k=0;k<params1.length;k++){
-            var p1=params1[k];
-            var p2=params2[k];
+        for(var k=0;k<modeArr.length;k++){
+            var p1=modeArr[k][0];
+            var p2=modeArr[k][1];
             var _super=function(content,filepath){
                 return content.replace(p1,function(){
                     if(typeof p2=="function"){

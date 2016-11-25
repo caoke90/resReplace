@@ -65,7 +65,11 @@ var search=eval(Wind.compile("async", function (pathOrUrl,params) {
                 itemArr.push(arr[0])
             }
         })
-        hasChange.push(itemArr)
+        if(itemArr.length>1){
+            hasChange.push(itemArr)
+        }else{
+            hasChange.push(itemArr[0])
+        }
     }
 
     return hasChange

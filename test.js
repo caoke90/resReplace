@@ -37,12 +37,8 @@ var test=eval(Wind.compile("async", function (modeArr2) {
             return "'"+str.replace(/\s/g,"").replace(/'/g,'\\')+"'";
         }]
     ]
-
-    for(var i=0;i<modeArr.length;i++){
-        var item=modeArr[i]
-        var cgArr=$await(replace("../zufangdai_stat_data/admin-src/**",item[0],item[1]))
-        console.log(cgArr)
-    }
+    var cgArr=$await(replace("../zufangdai_stat_data/admin-src/**",modeArr))
+    console.log(cgArr)
 
 
 }))
@@ -50,26 +46,11 @@ var test=eval(Wind.compile("async", function (modeArr2) {
 //test().start()
 
 var test2=eval(Wind.compile("async", function (modeArr2) {
-    var conf=fs.readFileSync("test/url2.txt").toString()
-    var arr1=[]
-    var arr2=[]
-    conf.replace(/.+?#.+/g,function(m,p){
-        var arr=m.split("#")
-        arr1.push(arr[0])
-        arr2.push(arr[1])
-    })
-//    console.log(arr1)
-//    console.log(arr2)
-//    var cgArr=$await(replace("../zufangdai_stat_data/admin-src/**",arr1,arr2))
-//    console.log(cgArr)
-    //查找
-    var arr3=[]
-    conf.replace(/\/.+/g,function(m,p){
-        arr3.push(m.replace(/#.+/,""))
-    })
-    console.log(arr3)
-    var cgArr=$await(find("../zufangdai_stat_data/admin-src/**",arr3))
+    var cgArr=$await(search("test/url2.txt",[/([a-z\/-]+)#([a-z\/-]+)/gi]))
     console.log(cgArr)
+    var cgArr=$await(replace("../zufangdai_stat_data/admin-src/**",cgArr))
+    console.log(cgArr)
+
 
 }))
 //test2().start()
@@ -78,7 +59,5 @@ var test2=eval(Wind.compile("async", function (modeArr2) {
 var test3=eval(Wind.compile("async", function () {
     var cgArr=$await(search("http://www.cnblogs.com/fengmk2/archive/2011/05/15/2047109.html",["<title>(*)<","问题:*"]))
     console.log(cgArr)
-    var cgArr=$await(search("test/url2.txt",[/([a-z\/-]+)#([a-z\/-]+)/gi]))
-    console.log(cgArr)
 }))
-test3().start()
+//test3().start()

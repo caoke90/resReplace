@@ -1,19 +1,19 @@
 var fs=require("fs")
 var Iconv = require('iconv-lite');
 var Wind=require("wind")
-var request = require('request');
+var urllib = require('urllib');
 var getContent=Wind.Async.Binding.fromCallback(function(pathOrUrl,callback) {
     if(/^https?:\/\//.test(pathOrUrl)){
-        request.get(pathOrUrl, function (error, response, body) {
-
+        urllib.request(pathOrUrl, function (error,data,response) {
             if(!error) {
-                if (/gb(2312|k)/i.test(response.headers['content-type'])) {
-                    body = Iconv.decode(body, 'gb2312').toString()
-                } else {
-                    body = body.toString()
+                var body=data.toString();
+                if (/gb(2312|k)/i.test(response.headers['content-type'])||/<meta .*?charset=(["']?)gb(2312|k|18030)\1?/gi.test(body)||/encoding="gbk"/gi.test(body)) {
+                    body = Iconv.decode(data, 'gb2312').toString()
                 }
                 callback(body)
             }else{
+
+                console.error(error)
                 callback("")
             }
         })
@@ -52,24 +52,19 @@ var search=eval(Wind.compile("async", function (pathOrUrl,params) {
         var itemArr=[]
         content.replace(reg,function(m){
             var arr=[]
-            if(arguments.length>2){
-                for(var j=1;j<arguments.length-2;j++){
-                    arr.push(arguments[j])
-                }
-            }else{
-                arr.push(m);
+            for(var k=0;k<arguments.length-2;k++){
+                arr.push(arguments[k])
             }
             if(arr.length>1){
-                itemArr.push(arr)
+                arr.shift()
+            }
+            if(arr.length==1){
+                itemArr=itemArr.concat(arr)
             }else{
-                itemArr.push(arr[0])
+                itemArr.push(arr)
             }
         })
-        if(itemArr.length>1){
-            hasChange.push(itemArr)
-        }else{
-            hasChange.push(itemArr[0])
-        }
+        hasChange.push(itemArr)
     }
 
     return hasChange

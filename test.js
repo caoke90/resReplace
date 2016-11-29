@@ -60,12 +60,16 @@ function getInfo(html,midNum,regstr){
     var reg=/<(p|h1|h2|h3|h4|h5|pre|blockquote|table)( +[^>]*>|>)[\d\D]*?<\/\1>/gi
 
     html.replace(reg,function(m){
+
         var start=arguments[arguments.length-2]
         var json={
             start:start,
             end:start+ m.length,
             power:m.length
         }
+        m.replace(/[\u4e00-\u9fa5]/g,function(){
+            json.power+=2
+        })
         arrP.push(json)
     })
 //    console.log(arrP)
@@ -96,7 +100,7 @@ function getInfo(html,midNum,regstr){
 
 var test3=eval(Wind.compile("async", function () {
     var urlArr=[
-//        "http://www.w3school.com.cn/xhtml/xhtml_standardattributes.asp",
+        "http://www.w3school.com.cn/xhtml/xhtml_standardattributes.asp",
         "http://china.ynet.com/3.1/1611/29/12057344.html",
         "http://blog.csdn.net/gyflyx/article/details/7890207",
         "http://news.yesky.com/focus/14/106845014.shtml",
@@ -106,9 +110,13 @@ var test3=eval(Wind.compile("async", function () {
         "http://sd.china.com.cn/a/2016/yaowen_1129/811771.html",
         "http://ex.cssn.cn/wh/wh_whrd/201611/t20161129_3294432.shtml",
         "http://www.bcty365.com/content-69-3455-1.html",
-//        "http://read.qidian.com/chapter/ktoOGqR_IA8JiWg6PYdjVg2/vsg8Gk6oO7uaGfXRMrUjdw2",
-//        "https://github.com/css-modules/css-modules",
-//        "https://github.com/webpack/css-loader"
+        "http://read.qidian.com/chapter/ktoOGqR_IA8JiWg6PYdjVg2/vsg8Gk6oO7uaGfXRMrUjdw2",
+        "https://github.com/css-modules/css-modules",
+        "http://forex.cngold.com.cn/gnrd/20161129d11024n103112138.html",
+        "http://www.readnovel.com/partlist/352058.html",
+        "http://www.readnovel.com/novel/358042/3.html",
+//        "https://github.com/webpack/css-loader",
+//        "http://china.ynet.com/3.1/1611/29/12059306.html"
     ]
     for(var i=0;i<urlArr.length;i++){
         var url=urlArr[i]

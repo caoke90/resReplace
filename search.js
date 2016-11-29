@@ -1,28 +1,6 @@
 var fs=require("fs")
-var Iconv = require('iconv-lite');
 var Wind=require("wind")
-var urllib = require('urllib');
-var getContent=Wind.Async.Binding.fromCallback(function(pathOrUrl,callback) {
-    if(/^https?:\/\//.test(pathOrUrl)){
-        urllib.request(pathOrUrl, function (error,data,response) {
-            if(!error) {
-                var body=data.toString();
-                if (/gb(2312|k)/i.test(response.headers['content-type'])||/<meta .*?charset=(["']?)gb(2312|k|18030)\1?/gi.test(body)||/encoding="gbk"/gi.test(body)) {
-                    body = Iconv.decode(data, 'gb2312').toString()
-                }
-                callback(body)
-            }else{
-
-                console.error(error)
-                callback("")
-            }
-        })
-    }else{
-        var buf=fs.readFileSync(pathOrUrl)
-        callback(buf.toString());
-    }
-
-})
+var getContent=require("./getContent")
 //字符转正则
 function regDir(reg){
     if(typeof reg=="string"){
@@ -43,8 +21,7 @@ function regDir(reg){
 }
 
 //地址不变的内容替换
-var search=eval(Wind.compile("async", function (pathOrUrl,params) {
-    var content=$await(getContent(pathOrUrl));
+var search=function (content,params) {
     var hasChange=[]
 
     for(var i=0;i<params.length;i++){
@@ -68,5 +45,5 @@ var search=eval(Wind.compile("async", function (pathOrUrl,params) {
     }
 
     return hasChange
-}))
+}
 module.exports=search;

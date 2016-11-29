@@ -56,43 +56,36 @@ var test2=eval(Wind.compile("async", function (modeArr2) {
 function getInfo(html,midNum,regstr){
     //去掉注释
     html=html.replace(/<!--.+?-->/g,"")
-    var midNum=midNum||50;
     var arrP=[]
-    var reg=/<(p|h1|h2|h3|h4|h5|table|pre|strong|blockquote|span)[^>]*>[\d\D]*?<\/\1>/gi
+    var reg=/<(p|h1|h2|h3|h4|h5|pre|blockquote|table)( +[^>]*>|>)[\d\D]*?<\/\1>/gi
+
     html.replace(reg,function(m){
         var start=arguments[arguments.length-2]
-        arrP.push({
+        var json={
             start:start,
             end:start+ m.length,
-            m:m
-        })
+            power:m.length
+        }
+        arrP.push(json)
     })
 //    console.log(arrP)
     var bigData={}
     var dongArr=[]
     for(var i=0;i<arrP.length;i++){
         if(i==0){
-            dongArr[i]=arrP[i]
-            bigData=arrP[i]
+            bigData=dongArr[i]=arrP[i]
             continue;
         }
-        if(arrP[i].start-arrP[i-1].end<midNum&&!/<(script|style|link)[^>]*>[\d\D]+?<\/\1>/gi.test(html.substring(dongArr[i-1].start,arrP[i].end))){
+        if(/<\/(a|li)>\s*<(a|li)/gi.test(html.substring(arrP[i-1].end,arrP[i].start))||/<\/div>[\d\D]*<\/div>/gi.test(html.substring(arrP[i-1].end,arrP[i].start))||/<\/(script|style|link|form)>/gi.test(html.substring(dongArr[i-1].start,arrP[i].end))){
+            dongArr[i]=arrP[i]
+        }else{
             dongArr[i]={
                 start:dongArr[i-1].start,
-                end:arrP[i].end
+                end:arrP[i].end,
+                power:dongArr[i-1].power+arrP[i].power
             }
-        }else{
-            dongArr[i]=arrP[i]
         }
-        var num1=0;
-        html.substring(dongArr[i].start,dongArr[i].end).replace(reg,function(m){
-            num1+= m.length
-        })
-        var num2=0;
-        html.substring(bigData.start,bigData.end).replace(reg,function(m){
-            num2+= m.length
-        })
-        if(num1>num2){
+        if(dongArr[i].power>bigData.power){
             bigData=dongArr[i]
         }
     }
@@ -103,7 +96,7 @@ function getInfo(html,midNum,regstr){
 
 var test3=eval(Wind.compile("async", function () {
     var urlArr=[
-        "http://www.w3school.com.cn/xhtml/index.asp",
+//        "http://www.w3school.com.cn/xhtml/xhtml_standardattributes.asp",
         "http://china.ynet.com/3.1/1611/29/12057344.html",
         "http://blog.csdn.net/gyflyx/article/details/7890207",
         "http://news.yesky.com/focus/14/106845014.shtml",
@@ -113,7 +106,9 @@ var test3=eval(Wind.compile("async", function () {
         "http://sd.china.com.cn/a/2016/yaowen_1129/811771.html",
         "http://ex.cssn.cn/wh/wh_whrd/201611/t20161129_3294432.shtml",
         "http://www.bcty365.com/content-69-3455-1.html",
-        "http://read.qidian.com/chapter/ktoOGqR_IA8JiWg6PYdjVg2/L9FP3OZMIMjwrjbX3WA1AA2"
+//        "http://read.qidian.com/chapter/ktoOGqR_IA8JiWg6PYdjVg2/vsg8Gk6oO7uaGfXRMrUjdw2",
+//        "https://github.com/css-modules/css-modules",
+//        "https://github.com/webpack/css-loader"
     ]
     for(var i=0;i<urlArr.length;i++){
         var url=urlArr[i]

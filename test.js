@@ -57,7 +57,8 @@ function getInfo(html,midNum){
     var midNum=midNum||100;
     var arrP=[]
     var reg=/<(p|h1|h2|h3|h4|h5|table|pre|strong)[^>]*>[\d\D]*?<\/\1>/gi
-    html.replace(reg,function(m,p1,start){
+    html.replace(reg,function(m){
+        var start=arguments[arguments.length-2]
         arrP.push({
             start:start,
             end:start+ m.length,

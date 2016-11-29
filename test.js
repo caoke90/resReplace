@@ -53,10 +53,12 @@ var test2=eval(Wind.compile("async", function (modeArr2) {
 
 }))
 //test2().start()
-function getInfo(html,midNum){
-    var midNum=midNum||100;
+function getInfo(html,midNum,regstr){
+    //去掉注释
+    html=html.replace(/<!--.+?-->/g,"")
+    var midNum=midNum||50;
     var arrP=[]
-    var reg=/<(p|h1|h2|h3|h4|h5|table|pre|strong)[^>]*>[\d\D]*?<\/\1>/gi
+    var reg=/<(p|h1|h2|h3|h4|h5|table|pre|strong|blockquote|span)[^>]*>[\d\D]*?<\/\1>/gi
     html.replace(reg,function(m){
         var start=arguments[arguments.length-2]
         arrP.push({
@@ -82,11 +84,20 @@ function getInfo(html,midNum){
         }else{
             dongArr[i]=arrP[i]
         }
-        if(html.substring(dongArr[i].start,dongArr[i].end).replace(/\x00-\xff/g,"").length>html.substring(bigData.start,bigData.end).replace(/\x00-\xff/g,"").length){
+        var num1=0;
+        html.substring(dongArr[i].start,dongArr[i].end).replace(reg,function(m){
+            num1+= m.length
+        })
+        var num2=0;
+        html.substring(bigData.start,bigData.end).replace(reg,function(m){
+            num2+= m.length
+        })
+        if(num1>num2){
             bigData=dongArr[i]
         }
     }
     var cont=html.substring(bigData.start,bigData.end)
+
     return cont
 }
 
@@ -100,7 +111,9 @@ var test3=eval(Wind.compile("async", function () {
         "http://www.sxdaily.com.cn/n/2016/1129/c322-6058732.html",
         "http://d.youth.cn/sk/201611/t20161129_8896142.htm",
         "http://sd.china.com.cn/a/2016/yaowen_1129/811771.html",
-        "http://ex.cssn.cn/wh/wh_whrd/201611/t20161129_3294432.shtml"
+        "http://ex.cssn.cn/wh/wh_whrd/201611/t20161129_3294432.shtml",
+        "http://www.bcty365.com/content-69-3455-1.html",
+        "http://read.qidian.com/chapter/ktoOGqR_IA8JiWg6PYdjVg2/L9FP3OZMIMjwrjbX3WA1AA2"
     ]
     for(var i=0;i<urlArr.length;i++){
         var url=urlArr[i]

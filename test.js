@@ -47,14 +47,15 @@ var test=eval(Wind.compile("async", function (modeArr2) {
 //test().start()
 
 var test2=eval(Wind.compile("async", function (modeArr2) {
-    var cgArr=$await(search("test/url2.txt",[/([a-z\/-]+)#([a-z\/-]+)/gi]))
+    var content=$await(getContent("test/url2.txt"))
+    var cgArr=search(content,[/([a-z\/-]+)#([a-z\/-]+)/gi])
+    console.log(content)
+    var cgArr=$await(replace("../zufangdai_stat_data/admin-src/**",cgArr[0]))
     console.log(cgArr)
-//    var cgArr=$await(replace("../zufangdai_stat_data/admin-src/**",cgArr))
-//    console.log(cgArr)
 
 
 }))
-//test2().start()
+test2().start()
 
 
 var test3=eval(Wind.compile("async", function () {
@@ -92,6 +93,6 @@ var test3=eval(Wind.compile("async", function () {
     }
 
 }))
-test3().start()
+//test3().start()
 
 

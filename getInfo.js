@@ -5,7 +5,9 @@ function getInfo(html){
     var reg=/<(p|h1|h2|h3|h4|h5|pre|blockquote|table)( +[^>]*>|>)[\d\D]*?<\/\1>/gi
 
     html.replace(reg,function(m){
-
+        if(/^<p/.test(m)&&/<\/div>/gi.test(m)){
+            m= m.replace(/<\/div>[\d\D]+/gi,"")
+        }
         var start=arguments[arguments.length-2]
         var json={
             start:start,

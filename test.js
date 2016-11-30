@@ -73,9 +73,9 @@ var test3=eval(Wind.compile("async", function () {
 //        "https://github.com/css-modules/css-modules",
 //        "http://forex.cngold.com.cn/gnrd/20161129d11024n103112138.html",
 //        "http://www.readnovel.com/partlist/352058.html",
-        "https://meican.com/",
 //        "https://github.com/webpack/css-loader",
-//        "http://china.ynet.com/3.1/1611/29/12059306.html"
+//        "http://china.ynet.com/3.1/1611/29/12059306.html",
+        "http://oil.cngold.com.cn/20161130d1816n103335895.html"
     ]
     for(var i=0;i<urlArr.length;i++){
         var url=urlArr[i]
@@ -83,9 +83,9 @@ var test3=eval(Wind.compile("async", function () {
 
         var info=getInfo(content)
         var data=search(content,[
-            /<title>(.+)<\/title>/
+            /<title>([\d\D]+?)<\/title>/
         ])
-
+        console.log(url,"_____________________________________")
 //        console.log(content)
         console.log(data)
         console.log(info)

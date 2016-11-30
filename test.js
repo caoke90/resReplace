@@ -84,7 +84,7 @@ var test3=eval(Wind.compile("async", function () {
 
         var info=getInfo(content)
         var data=search(content,[
-            /<title>([\d\D]+?)<\/title>/
+            /<title>\s*([\d\D]+?)\s*<\/title>/
         ])
         console.log(url,"_____________________________________")
 //        console.log(content)

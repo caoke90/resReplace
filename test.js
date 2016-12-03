@@ -2,11 +2,7 @@ var Wind=require("wind")
 var fs=require("fs")
 var path=require("path")
 
-var copy=require("./copy")
-var replace=require("./replace");
-var search=require("./search");
-var getInfo=require("./getInfo");
-var getContent=require("./getContent");
+var Api=require("./Api")
 
 var test=eval(Wind.compile("async", function (modeArr2) {
     //组件
@@ -38,7 +34,7 @@ var test=eval(Wind.compile("async", function (modeArr2) {
             return "'"+str.replace(/\s/g,"").replace(/'/g,'\\')+"'";
         }]
     ]
-    var cgArr=$await(replace("../zufangdai_stat_data/admin-src/**",modeArr))
+    var cgArr=$await(Api.replace("../zufangdai_stat_data/admin-src/**",modeArr))
     console.log(cgArr)
 
 
@@ -47,52 +43,56 @@ var test=eval(Wind.compile("async", function (modeArr2) {
 //test().start()
 
 var test2=eval(Wind.compile("async", function (modeArr2) {
-    var content=$await(getContent("test/url2.txt"))
+    var content=$await(Api.getContent("test/url2.txt"))
     var cgArr=search(content,[/([a-z\/-]+)#([a-z\/-]+)/gi])
     console.log(content)
-    var cgArr=$await(replace("../zufangdai_stat_data/admin-src/**",cgArr[0]))
+    var cgArr=$await(Api.replace("../zufangdai_stat_data/admin-src/**",cgArr[0]))
     console.log(cgArr)
 
 
 }))
-test2().start()
+//test2().start()
 
 
 var test3=eval(Wind.compile("async", function () {
     var urlArr=[
-//        "http://www.w3school.com.cn/xhtml/xhtml_standardattributes.asp",
-//        "http://china.ynet.com/3.1/1611/29/12057344.html",
-//        "http://blog.csdn.net/gyflyx/article/details/7890207",
-//        "http://news.yesky.com/focus/14/106845014.shtml",
-//        "http://www.mnw.cn/news/shehui/1478248.html",
-//        "http://www.sxdaily.com.cn/n/2016/1129/c322-6058732.html",
-//        "http://d.youth.cn/sk/201611/t20161129_8896142.htm",
-//        "http://sd.china.com.cn/a/2016/yaowen_1129/811771.html",
-//        "http://ex.cssn.cn/wh/wh_whrd/201611/t20161129_3294432.shtml",
-//        "http://www.bcty365.com/content-69-3455-1.html",
-//        "http://read.qidian.com/chapter/ktoOGqR_IA8JiWg6PYdjVg2/vsg8Gk6oO7uaGfXRMrUjdw2",
-//        "https://github.com/css-modules/css-modules",
-//        "http://forex.cngold.com.cn/gnrd/20161129d11024n103112138.html",
-//        "http://www.readnovel.com/partlist/352058.html",
-//        "https://github.com/webpack/css-loader",
-//        "http://china.ynet.com/3.1/1611/29/12059306.html",
+        "http://www.w3school.com.cn/xhtml/xhtml_standardattributes.asp",
+        "http://china.ynet.com/3.1/1611/29/12057344.html",
+        "http://blog.csdn.net/gyflyx/article/details/7890207",
+        "http://news.yesky.com/focus/14/106845014.shtml",
+        "http://www.mnw.cn/news/shehui/1478248.html",
+        "http://www.sxdaily.com.cn/n/2016/1129/c322-6058732.html",
+        "http://d.youth.cn/sk/201611/t20161129_8896142.htm",
+        "http://sd.china.com.cn/a/2016/yaowen_1129/811771.html",
+        "http://ex.cssn.cn/wh/wh_whrd/201611/t20161129_3294432.shtml",
+        "http://www.bcty365.com/content-69-3455-1.html",
+        "http://read.qidian.com/chapter/ktoOGqR_IA8JiWg6PYdjVg2/vsg8Gk6oO7uaGfXRMrUjdw2",
+        "https://github.com/css-modules/css-modules",
+        "http://forex.cngold.com.cn/gnrd/20161129d11024n103112138.html",
+        "http://www.readnovel.com/partlist/352058.html",
+        "https://github.com/webpack/css-loader",
+        "http://china.ynet.com/3.1/1611/29/12059306.html",
         "http://oil.cngold.com.cn/20161130d1816n103335895.html"
     ]
+    var tpl=fs.readFileSync("info/tpl.html").toString()
     for(var i=0;i<urlArr.length;i++){
         var url=urlArr[i]
-        var content=$await(getContent(url))
-
-        var info=getInfo(content)
-        var data=search(content,[
+        var content=$await(Api.getContent(url))
+        var info=Api.getInfo(content)
+        var data=Api.search(content,[
             /<title>\s*([\d\D]+?)\s*<\/title>/
         ])
         console.log(url,"_____________________________________")
 //        console.log(content)
         console.log(data)
         console.log(info)
+        fs.writeFileSync("info/"+i+".html",Api.parseTpl(tpl,{
+              title:data[0][0],
+              info:info
+        }))
     }
 
 }))
-//test3().start()
+test3().start()
 
 

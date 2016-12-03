@@ -1,7 +1,12 @@
 var fs=require("fs")
 var Iconv = require('iconv-lite');
 var Wind=require("wind")
-var request = require('./request')
+var request = require('request').defaults({
+    encoding: null,
+    headers:{
+        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11'
+    }
+});
 
 var getContent=Wind.Async.Binding.fromCallback(function(pathOrUrl,callback) {
     if(/^https?:\/\//.test(pathOrUrl)){

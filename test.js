@@ -87,7 +87,7 @@ var test3=eval(Wind.compile("async", function () {
         console.log(data)
         console.log(info)
         fs.writeFileSync("info/"+i+".html",Api.parseTpl(tpl,{
-              title:data[0][0],
+              title:data[0],
               info:info
         }))
     }

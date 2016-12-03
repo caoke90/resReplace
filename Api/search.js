@@ -43,7 +43,9 @@ var search=function (content,params) {
         })
         hasChange.push(itemArr)
     }
-
+    if(params.length==1){
+        return hasChange[0];
+    }
     return hasChange
 }
 module.exports=search;

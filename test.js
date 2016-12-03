@@ -79,15 +79,15 @@ var test3=eval(Wind.compile("async", function () {
         var url=urlArr[i]
         var content=$await(Api.getContent(url))
         var info=Api.getInfo(content)
-        var data=Api.search(content,[
+        var title=Api.search(content,[
             /<title>\s*([\d\D]+?)\s*<\/title>/
         ])
         console.log(url,"_____________________________________")
 //        console.log(content)
-        console.log(data)
+        console.log(title)
         console.log(info)
         fs.writeFileSync("info/"+i+".html",Api.parseTpl(tpl,{
-              title:data[0],
+              title:title,
               info:info
         }))
     }

@@ -36,14 +36,16 @@ var search=function (content,params) {
                 arr.shift()
             }
             if(arr.length==1){
-                itemArr=itemArr.concat(arr)
-            }else{
-                itemArr.push(arr)
+                arr=arr[0]
             }
+            itemArr.push(arr)
         })
+        if(itemArr.length==1){
+            itemArr=itemArr[0]
+        }
         hasChange.push(itemArr)
     }
-    if(params.length==1){
+    if(hasChange.length==1){
         return hasChange[0];
     }
     return hasChange

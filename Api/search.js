@@ -40,9 +40,6 @@ var search=function (content,params) {
             }
             itemArr.push(arr)
         })
-        if(itemArr.length==1){
-            itemArr=itemArr[0]
-        }
         hasChange.push(itemArr)
     }
     if(hasChange.length==1){

@@ -63,15 +63,19 @@ var getListDetail=eval(Wind.compile("async", function (code,num) {
     var start=false
     for(var i=0;i<list2.length;i++){
         var code1=list2[i][0]
-        if(code1=="160636"){
+
+        if(code1=="001050"){
             start=true
+        }
+        if(code1=="202301"){
+            start=false
         }
         if(start){
             $await(getCodeTable(code1))
         }
     }
 }))
-getListDetail().start()
+//getListDetail().start()
 //解析单个基金
 var solveData=eval(Wind.compile("async", function (code,num) {
     var list2=getCvs("基金/"+code +".csv")
@@ -146,151 +150,150 @@ var filter=eval(Wind.compile("async", function () {
     saveCvs("非债油开放申购开放赎回.csv",list3)
 
 }))
+
+function sort1(item1,item2){
+    var num1=item1[2]
+    var num2=item2[2]
+    if(num1>num2){
+        return -1
+    }if(num1==num2){
+        return 0
+    }else{
+        return 1
+    }
+}
 //filter().start()
 var test3=eval(Wind.compile("async", function (time) {
 
-    var list2=getCvs("非债开放申购开放赎回.csv")
+    var list2=getCvs("非债油开放申购开放赎回.csv")
     var title=list2.shift()
     var jsonData={}
-    list2.forEach(function(item1){
-        var code1=item1[0]
-        jsonData[code1]=getCvs("基金/"+code1+".csv")
-    })
+    var fenx={}
+    var fenxNum=0.5
+    var fenxDate={}
     //时间段
-
-    //累计净值增长排名
-    var list1=[]
-    var list4=[]
-    var list5=[]
     list2.forEach(function(item1){
         var code1=item1[0]
-        var data1=jsonData[code1]
-        var num1=Number(data1[time[0]][2])
-        var len=data1.length>time[1]?time[1]:data1.length-1
-        var num2=Number(data1[len][2])
-        var text1=num1-num2
-        list1.push(item1.concat(num1-num2))
-
-        var num1=Number(data1[time[0]][1])
-        var len=data1.length>time[1]?time[1]:data1.length-1
-        var num2=Number(data1[len][1])
-        var text2=num1-num2
-        list4.push(item1.concat(num1-num2))
-
-        list5.push(item1.concat(text1-text2))
+        jsonData[code1]=getCvs("基金/"+code1+".csv").splice(time[0],time[1])
     })
-    list1.sort(function(item1,item2){
-        var num1=item1[2]
-        var num2=item2[2]
-        if(num1>num2){
-            return -1
-        }if(num1==num2){
-            return 0
+    //算这段时间的风险
+    list2.forEach(function(item1){
+        var code1=item1[0]
+        var sum=0;
+        var len=0;
+        jsonData[code1].forEach(function(item,k){
+            var num=Number(item[3].replace("%",""))
+            if(num>fenxNum){
+                sum=sum+num
+                len++
+            }
+            if(num<-fenxNum){
+                sum=sum-num
+                len++
+            }
+        })
+        if(len>0){
+            fenx[code1]=sum/len
+            fenxDate[code1]=len
         }else{
-            return 1
+            fenxDate[code1]=1
+            fenx[code1]=0
         }
     })
-    list1.unshift(title.concat("累计净值增长"+time.join("-")))
-    list4.sort(function(item1,item2){
-        var num1=item1[2]
-        var num2=item2[2]
-        if(num1>num2){
-            return -1
-        }if(num1==num2){
-            return 0
-        }else{
-            return 1
-        }
-    })
-    list4.unshift(title.concat("单位净值增长"+time.join("-")))
-
-    list5.sort(function(item1,item2){
-        var num1=item1[2]
-        var num2=item2[2]
-        if(num1>num2){
-            return -1
-        }if(num1==num2){
-            return 0
-        }else{
-            return 1
-        }
-    })
-    list5.unshift(title.concat("累计减单位增长"+time.join("-")))
-    saveCvs("排行/累计净值增长排名"+time.join("-")+"天.csv",list1)
-    saveCvs("排行/单位净值增长排名"+time.join("-")+"天.csv",list4)
-    saveCvs("排行/累计减单位增长排名"+time.join("-")+"天.csv",list5)
 
     //累计净值增长率排名
 
-    var list1=[]
-    var list4=[]
-    var list5=[]
+    var list1=[]//累计率
+    var list4=[]//单位率
+    var list5=[]//分红
+    var list6=[]//风险
+    var list7=[]//性价比
+    var dataJSON={
+        title:"最近"+time.join("-")+"天",
+        xAxis:[],
+        series:[{
+            "name":"收益率%",
+            "type":"line",
+            "data":[]
+        },{
+            "name":"风险%",
+            "type":"line",
+            "data":[]
+        },{
+            "name":"性价比",
+            "type":"line",
+            "data":[]
+        }]
+    }
+    var shouyiJson=dataJSON.series[0]
+    var fenxJson=dataJSON.series[1]
+    var xinjiaJson=dataJSON.series[2]
+
+
     list2.forEach(function(item1){
         var code1=item1[0]
+        dataJSON.xAxis.push(code1)
         var data1=jsonData[code1]
-        var num1=Number(data1[time[0]][2])
-        var len=data1.length>time[1]?time[1]:data1.length-1
-        var num2=Number(data1[len][2])
-        var text1=(num1-num2)/num2
-        list1.push(item1.concat((num1-num2)/num2))
+        if(data1[0]&&data1[0][2]){
+            var num1=Number(data1[0][2])
+            var len=data1.length-1
+            var num2=Number(data1[len][2])
+            var text1=(num1-num2)/num2
+            list1.push(item1.concat(text1*100))
 
-        var num1=Number(data1[time[0]][1])
-        var len=data1.length>time[1]?time[1]:data1.length-1
-        var num2=Number(data1[len][1])
-        var text2=(num1-num2)/num2
-        list4.push(item1.concat([(num1-num2)/num2,num1,num2]))
+            var num1=Number(data1[0][1])
+            var len=data1.length-1
+            var num2=Number(data1[len][1])
+            var text2=(num1-num2)/num2
+            list4.push(item1.concat([text2*100,num1,num2]))
 
-        if(text1<0&&text2<0){
-            list5.push(item1.concat([text1-text2,text1,text2]))
+            if(text1<0&&text2<0){
+                list5.push(item1.concat([text1-text2,text1,text2]))
+            }else{
+                list5.push(item1.concat([text1-text2,text1,text2]))
+            }
+
+            list6.push(item1.concat([fenx[code1]]))
+
+            list7.push(item1.concat([text1*100/fenxDate[code1]-fenx[code1],text1*100,fenx[code1]]))
+            xinjiaJson.data.push((text1*100/fenxDate[code1]-fenx[code1]))
+            shouyiJson.data.push(text2*100)
+            fenxJson.data.push(fenx[code1])
         }else{
-            list5.push(item1.concat([text1-text2,text1,text2]))
+            xinjiaJson.data.push(null)
+            shouyiJson.data.push(null)
+            fenxJson.data.push(null)
         }
+    })
 
-    })
-    list1.sort(function(item1,item2){
-        var num1=item1[2]
-        var num2=item2[2]
-        if(num1>num2){
-            return -1
-        }if(num1==num2){
-            return 0
-        }else{
-            return 1
-        }
-    })
+    list1.sort(sort1)
     list1.unshift(title.concat("累计净值增长率"+time.join("-")))
-    list4.sort(function(item1,item2){
-        var num1=item1[2]
-        var num2=item2[2]
-        if(num1>num2){
-            return -1
-        }if(num1==num2){
-            return 0
-        }else{
-            return 1
-        }
-    })
+    list4.sort(sort1)
     list4.unshift(title.concat("单位净值增长率"+time.join("-")))
-    list5.sort(function(item1,item2){
-        var num1=item1[2]
-        var num2=item2[2]
-        if(num1>num2){
-            return -1
-        }if(num1==num2){
-            return 0
-        }else{
-            return 1
-        }
-    })
-    list5.unshift(title.concat(["累计减单位增长率"+time.join("-"),"累计率","单位率"]))
-    saveCvs("排行/累计净值增长率排名"+time.join("-")+"天.csv",list1)
-    saveCvs("排行/单位净值增长率排名"+time.join("-")+"天.csv",list4)
-    saveCvs("排行/性价比排名"+time.join("-")+"天.csv",list5)
+    list6.sort(sort1)
+    list6.unshift(title.concat(["风险排名"+time.join("-")]))
+    list7.sort(sort1)
+    list7.unshift(title.concat(["性价比"+time.join("-"),"收益率%","风险"]))
+
+
+    saveCvs("排行/单位收益排名"+time.join("-")+"天.csv",list4)
+//    saveCvs("排行/分红排名"+time.join("-")+"天.csv",list5)
+    saveCvs("排行/累计收益排名"+time.join("-")+"天.csv",list1)
+    saveCvs("排行/风险排名"+time.join("-")+"天.csv",list6)
+    saveCvs("排行/性价比排名"+time.join("-")+"天.csv",list7)
+    fs.writeFileSync("图形/data.json",JSON.stringify(dataJSON,null,2))
 }))
+//getListDetail().start()
 //test3([1,10]).start()
 //test3([1,20]).start()
 //test3([1,30]).start()
-//test3([1,100]).start()
+//test3([1,40]).start()
+//test3([1,50]).start()
+//test3([1,60]).start()
+//test3([140,200]).start()
 //test3([1,200]).start()
-//test3([1,300]).start()
+//test3([1,30]).start()
+test3([1,2]).start()
+//test3([60,90]).start()
+//test3([90,120]).start()
 

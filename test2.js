@@ -46,7 +46,7 @@ var getList=eval(Wind.compile("async", function () {
 //爬取单个基金历史数据
 var getCodeTable=eval(Wind.compile("async", function (code) {
 
-    var url="http://fund.eastmoney.com/f10/F10DataApi.aspx?type=lsjz&code="+code+"&page=1&per=1000&sdate=&edate=&rt=0.5023676056880504"
+    var url="http://fund.eastmoney.com/f10/F10DataApi.aspx?type=lsjz&code="+code+"&page=1&per=5&sdate=&edate=&rt=0.5023676056880504"
     console.log(url)
     var content=$await(Api.getContent(url))
 //    console.log(content)
@@ -59,21 +59,21 @@ var getCodeTable=eval(Wind.compile("async", function (code) {
 
     var data=[].concat(arr1[0],arr1[1])
 //    console.log(data)
-//    if(fs.existsSync("基金/"+code+".csv")){
-//        var oData=getCvs("基金/"+code+".csv");
-//        var nData=[]
-//        arr1[1].forEach(function(item){
-//            var item2=getArrbyDate(item[0],oData)
-//            if(!item2){
-//                nData.push(item)
-//            }
-//        })
-//        nData.forEach(function(item,k){
-//            oData.splice(k+1,0,item)
-//        })
-//        console.log(oData)
-//        data=oData
-//    }
+    if(fs.existsSync("基金/"+code+".csv")){
+        var oData=getCvs("基金/"+code+".csv");
+        var nData=[]
+        arr1[1].forEach(function(item){
+            var item2=getArrbyDate(item[0],oData)
+            if(!item2){
+                nData.push(item)
+            }
+        })
+        nData.forEach(function(item,k){
+            oData.splice(k+1,0,item)
+        })
+        console.log(oData)
+        data=oData
+    }
     saveCvs("基金/"+code+".csv",data)
 
 }))
@@ -205,9 +205,6 @@ var test3=eval(Wind.compile("async", function (time) {
     var list2=getCvs("非债开放申购开放赎回.csv")
     var title=list2.shift()
     var jsonData={}
-    var fenx={}
-    var fenxNum=0.5
-    var fenxDate={}
     var pjpaimDate={}
     //时间段
     list2.forEach(function(item1){
@@ -219,24 +216,17 @@ var test3=eval(Wind.compile("async", function (time) {
     //算这段时间的风险
     list2.forEach(function(item1){
         var code1=item1[0]
-        var sum=0;
-        var len=0;
+
         var pmsum=0
-        var pmlen=0
         jsonData[code1].forEach(function(item,k){
             if(item[6]){
-                pmsum=pmsum+parseInt(item[6])
-                pmlen++
+                var num=parseInt(item[6])
+                if(num<100){
+                    pmsum=pmsum+100-num*2
+                }
             }
         })
-        pjpaimDate[code1]=pmsum/pmlen
-        if(len>0){
-            fenx[code1]=sum/len
-            fenxDate[code1]=len
-        }else{
-            fenxDate[code1]=1
-            fenx[code1]=0
-        }
+        pjpaimDate[code1]=pmsum
     })
 
     //累计净值增长率排名
@@ -254,18 +244,13 @@ var test3=eval(Wind.compile("async", function (time) {
             "type":"line",
             "data":[]
         },{
-            "name":"风险%",
-            "type":"line",
-            "data":[]
-        },{
             "name":"性价比",
             "type":"line",
             "data":[]
         }]
     }
     var shouyiJson=dataJSON.series[0]
-    var fenxJson=dataJSON.series[1]
-    var xinjiaJson=dataJSON.series[2]
+    var xinjiaJson=dataJSON.series[1]
 //    var danjiason=dataJSON.series[3]
 
 
@@ -292,17 +277,14 @@ var test3=eval(Wind.compile("async", function (time) {
                 list5.push(item1.concat([text1-text2,text1,text2]))
             }
 
-            list6.push(item1.concat([fenx[code1]]))
 
             list7.push(item1.concat([pjpaimDate[code1]]))
             xinjiaJson.data.push(pjpaimDate[code1])
             shouyiJson.data.push(text1*100)
 //            danjiason.data.push(text2*100)
-            fenxJson.data.push(fenx[code1])
         }else{
             xinjiaJson.data.push(null)
             shouyiJson.data.push(null)
-            fenxJson.data.push(null)
         }
     })
 
@@ -310,16 +292,15 @@ var test3=eval(Wind.compile("async", function (time) {
     list1.unshift(title.concat("累计净值增长率"+time.join("-")))
     list4.sort(sort1)
     list4.unshift(title.concat("单位净值增长率"+time.join("-")))
-    list6.sort(sort1)
-    list6.unshift(title.concat(["风险排名"+time.join("-")]))
-    list7.sort(sort1rev)
+
+    list7.sort(sort1)
     list7.unshift(title.concat(["性价比"]))
 
 
-    saveCvs("排行/单位收益排名"+time.join("-")+"天.csv",list4)
+//    saveCvs("排行/单位收益排名"+time.join("-")+"天.csv",list4)
 //    saveCvs("排行/分红排名"+time.join("-")+"天.csv",list5)
     saveCvs("排行/累计收益排名"+time.join("-")+"天.csv",list1)
-    saveCvs("排行/风险排名"+time.join("-")+"天.csv",list6)
+
     saveCvs("排行/性价比排名"+time.join("-")+"天.csv",list7)
     fs.writeFileSync("图形/data.json",JSON.stringify(dataJSON,null,2))
 }))
@@ -327,17 +308,19 @@ var test3=eval(Wind.compile("async", function (time) {
 //test3([1,10]).start()
 //test3([1,20]).start()
 //test3([1,30]).start()
-//test3([1,3]).start()
+test3([1,2]).start()
+test3([1,5]).start()
+test3([1,10]).start()
 test3([1,20]).start()
 test3([1,40]).start()
 test3([1,60]).start()
 test3([1,80]).start()
 test3([1,100]).start()
-test3([1,120]).start()
-test3([1,140]).start()
-test3([1,160]).start()
-test3([1,180]).start()
-test3([1,200]).start()
+//test3([1,120]).start()
+//test3([1,140]).start()
+//test3([1,160]).start()
+//test3([1,180]).start()
+//test3([1,200]).start()
 //test3([20,40]).start()
 //test3([10,20]).start()
 //test3([1,10]).start()
@@ -351,4 +334,3 @@ test3([1,200]).start()
 //test3([3,4]).start()
 //test3([60,90]).start()
 //test3([90,120]).start()
-

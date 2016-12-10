@@ -44,7 +44,7 @@ var test=eval(Wind.compile("async", function (modeArr2) {
 
 var test2=eval(Wind.compile("async", function (modeArr2) {
     var content=$await(Api.getContent("test/url2.txt"))
-    var cgArr=search(content,[/([a-z\/-]+)#([a-z\/-]+)/gi])
+    var cgArr=Api.search(content,[/([a-z\/-]+)#([a-z\/-]+)/gi])
     console.log(content)
     var cgArr=$await(Api.replace("../zufangdai_stat_data/admin-src/**",cgArr[0]))
     console.log(cgArr)

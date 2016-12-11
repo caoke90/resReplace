@@ -64,7 +64,6 @@ var test3=eval(Wind.compile("async", function () {
         "http://www.sxdaily.com.cn/n/2016/1129/c322-6058732.html",
         "http://d.youth.cn/sk/201611/t20161129_8896142.htm",
         "http://sd.china.com.cn/a/2016/yaowen_1129/811771.html",
-        "http://ex.cssn.cn/wh/wh_whrd/201611/t20161129_3294432.shtml",
         "http://www.bcty365.com/content-69-3455-1.html",
         "http://read.qidian.com/chapter/ktoOGqR_IA8JiWg6PYdjVg2/vsg8Gk6oO7uaGfXRMrUjdw2",
         "https://github.com/css-modules/css-modules",

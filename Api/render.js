@@ -39,10 +39,13 @@ function render(filepath,root,gloCallback){
         var content=fs.readFileSync(filepath).toString();
         if(fs.existsSync(jspath)) {
             var sp = require(jspath)
-            sp.render(function(data){
+            var sync=sp.render(root,function(data){
                 content=parseTpl(content,data)
                 callback(content,filepath)
-            },root)
+            })
+            if(sync&&sync.start){
+                sync.start()
+            }
         }else{
             callback(content,filepath)
         }

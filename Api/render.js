@@ -3,18 +3,10 @@ var parseTpl=require("./parseTpl")
 var fs=require("fs")
 var path=require("path")
 
-var p1=/__inline\((.+?)\)/g;
-var p2=function(m,p1){
-    var path1=p1.replace(/["']/g,"");
-    var dirname=path.dirname(this.filepath)
-    var filepath1=path.join(dirname,path1)
-    var str=fs.readFileSync(filepath1).toString()
-    str=this._super(str,filepath1)
-    this.callback(str)
-};
+
 function render(filepath,root,gloCallback){
-
-
+    var p1=/__include\((.+?)\)/g;
+    //解析<%include("./test.html")%>
     var _super=function(content,filepath,callback){
         var ncontent=content
         if(p1.test(content)){
@@ -39,6 +31,7 @@ function render(filepath,root,gloCallback){
             callback(ncontent)
         }
     }
+    //解析模块
     function solve(filepath,callback){
         var param=path.parse(filepath)
         var jspath=path.join(param.dir,param.name+".js")
@@ -61,7 +54,4 @@ function render(filepath,root,gloCallback){
 
 
 }
-render(__dirname+"/demo.html",{name:"root"},function(ncontent){
-
-    console.log(ncontent)
-})
+module.exports=render;

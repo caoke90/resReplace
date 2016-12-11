@@ -18,8 +18,8 @@ console.log(list)
 var Api=require("./Api")
 app.use(function(req,res,next){
     console.log(req.path)
-    if(list.indexOf(req.path.substr(1))>-1){
-        Api.render(__dirname+req.path,req,function(content){
+    if(list.indexOf(req.path.substr(1)+".ejs")>-1){
+        Api.render(__dirname+req.path+".ejs",req,function(content){
             res.send(content)
         })
     }else{
@@ -29,4 +29,4 @@ app.use(function(req,res,next){
 
 
 //静态文件
-app.use(express.static("public"));
+app.use(express.static(__dirname));

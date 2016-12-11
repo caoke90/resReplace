@@ -7,4 +7,5 @@ module.exports={
 
     getInfo:require("./getInfo"),
     parseTpl:require("./parseTpl"),
+    render:require("./render"),
 };

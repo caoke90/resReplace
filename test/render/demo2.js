@@ -1,6 +1,6 @@
 
 module.exports={
-    render:function(callback,root){
+    render:function(root,callback){
         callback({
             root:root,
             name:"caoke2"

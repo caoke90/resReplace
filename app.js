@@ -17,8 +17,8 @@ var list=glob.sync("**/*.ejs",{nodir:true})
 console.log(list)
 var Api=require("./Api")
 app.use(function(req,res,next){
-    console.log(req.path)
     if(list.indexOf(req.path.substr(1)+".ejs")>-1){
+        console.log(req.path)
         Api.render(__dirname+req.path+".ejs",req,function(content){
             res.send(content)
         })

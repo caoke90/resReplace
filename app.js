@@ -16,7 +16,7 @@ app.listen(3000);
 var Api=require("./Api")
 var fs=require("fs")
 app.use(function(req,res,next){
-    if(fs.existsSync(req.path.substr(1)+".ejs")>-1){
+    if(fs.existsSync(req.path.substr(1)+".ejs")){
         console.log(req.path)
         Api.render(__dirname+req.path+".ejs",req,function(content){
             res.send(content)

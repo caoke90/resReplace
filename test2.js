@@ -209,7 +209,7 @@ var test3=eval(Wind.compile("async", function (time) {
     //时间段
     list2.forEach(function(item1){
         var code1=item1[0]
-        jsonData[code1]=getCvs("基金/"+code1+".csv").splice(time[0],time[1]-time[0])
+        jsonData[code1]=getCvs("基金/"+code1+".csv").splice(time[0],time[1]-time[0]+1)
     })
     var timeDate=[jsonData["000063"][jsonData["000063"].length-1][0],jsonData["000063"][0][0]]
     console.log(timeDate)
@@ -221,8 +221,8 @@ var test3=eval(Wind.compile("async", function (time) {
         jsonData[code1].forEach(function(item,k){
             if(item[6]){
                 var num=parseInt(item[6])
-                if(num<100){
-                    pmsum=pmsum+100-num*2
+                if(num<200){
+                    pmsum=pmsum+200-num
                 }
             }
         })
@@ -263,7 +263,7 @@ var test3=eval(Wind.compile("async", function (time) {
             var len=data1.length-1
             var num2=Number(data1[len][2])
             var text1=(num1-num2)/num2
-            list1.push(item1.concat(text1*100))
+            list1.push(item1.concat([text1*100]))
 
             var num1=Number(data1[0][1])
             var len=data1.length-1
@@ -308,14 +308,14 @@ var test3=eval(Wind.compile("async", function (time) {
 //test3([1,10]).start()
 //test3([1,20]).start()
 //test3([1,30]).start()
+//test3([1,2]).start()
 test3([1,2]).start()
-test3([1,5]).start()
-test3([1,10]).start()
+//test3([1,10]).start()
 test3([1,20]).start()
-test3([1,40]).start()
-test3([1,60]).start()
-test3([1,80]).start()
-test3([1,100]).start()
+//test3([1,40]).start()
+//test3([1,60]).start()
+//test3([1,80]).start()
+//test3([1,100]).start()
 //test3([1,120]).start()
 //test3([1,140]).start()
 //test3([1,160]).start()

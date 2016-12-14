@@ -13,7 +13,7 @@ app.listen(3000);
 
 //获取文件夹内所有文件路径
 
-var Api=require("./Api")
+Api=require("./Api")
 var fs=require("fs")
 app.use(function(req,res,next){
     if(fs.existsSync(req.path.substr(1)+".ejs")){

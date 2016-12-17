@@ -27,10 +27,10 @@ Api.stopRedis=function(){
 Api.localstore = redis.createClient({
     port:6379
 });
-var tgdb=true
+Api.isRunning=false
 Api.localstore.on("error",function(){
-    if(tgdb){
-        tgdb=false
+    if(!Api.isRunning){
+        Api.isRunning=true
         console.log("redis不存在！启动")
         Api.startRedis()
     }else{

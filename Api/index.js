@@ -38,6 +38,7 @@ Api.localstore.on("error",function(){
     }
 })
 var Wind=require("Wind")
+Wind.logger.level = Wind.Logging.Level.WARN;
 function setAsync(key){
     Api.localstore[key+"Async"] = Wind.Async.Binding.fromCallback(function(){
         var arr=Array.prototype.slice.call(arguments)
@@ -107,7 +108,7 @@ Object.extend=function(){
 Api.BigClass=Object.extend({
     lastTime:null,//下次更新时间
     velocity:1,//下次更新时间
-    needUpdate:function(){
+    hasCache:function(){
         var now=new Date();
         if(!this.lastTime){
             this.lastTime=now.getTime()+this.velocity*86400000
@@ -122,11 +123,7 @@ Api.BigClass=Object.extend({
     render:eval(Wind.compile("async", function (req,next) {
         if(!this.isRunning) {
             this.isRunning = true
-            if(this.needUpdate()){
-                $await(this.getData(req,next))
-            }else{
-                $await(this.getCache(req,next))
-            }
+            $await(this.getData(req,next))
             this.isRunning = false
         }else{
             next("isrunning")

@@ -11,70 +11,65 @@ var isListUrl=function(url,listUrls){
     }
     return false
 }
-Api.startAnt=eval(Wind.compile("async", function (startUrls,listUrls,itemUrls) {
-
-    //添加列表
+var fs=require("fs")
+Api.startAnt=eval(Wind.compile("async", function (startUrls) {
 
     //获取一个列表html，解析添加list、item，重复这个过程
     //获取url
+    var taskData={
+        curIndex:0,
+        taskList:[].concat(startUrls)
+    }
+    if(fs.existsSync("taskData.txt")){
+        taskData=JSON.parse(fs.readFileSync("taskData.txt").toString())
+    }
 
-    var curIndex=0
-    var urlCache=[]
-    //访问了那些页面
-    var tempList=[].concat(startUrls)
     //提取了那些url
-    var tempItem=[]
-    while(tempList.length>curIndex){
-        var cururl=tempList[curIndex]
-        curIndex++
-        //获取list、item
-        var doman=cururl.match(/(http|ftp|https):\/\/[^/]+/)[0]
+    var dataList=[]
+    if(fs.existsSync("data.txt")){
+        dataList=JSON.parse(fs.readFileSync("data.txt").toString())
+    }
+    var ok=true
+    while(ok){
+        var cururl=taskData.taskList[taskData.curIndex++]
+        console.log(cururl)
         //获取html
         var html=$await(Api.getContent(cururl))
-
-        var urlArr=[]
-        html.replace(/href *= *(["'])(.*?)\1/gi,function(m,p1,p2){
-            urlArr.push(p2)
-        })
-        urlArr.forEach(function(ourl){
-
-            var url
-            if(/(http|ftp|https):\/\//.test(ourl)){
-                url=ourl
-            }else if(ourl[0]=="/"){
-                url=doman+ourl
-            }else{
-                cururl.replace(/(http|ftp|https):\/\/[^?]+\//,function(m){
-                    url=m+ourl
-                })
+        if(html.indexOf('<script language="javascript">window.location')>-1){
+            var arr=Api.search(html,["window.location=(**);"])
+            console.log(arr)
+        }
+        var tempList=Api.search(html,["forum.php?mod=forumdisplay&fid=*&amp;page=*&amp;mobile=2"])
+        //添加新的任务
+        tempList.forEach(function(item){
+            var url="http://www.168ytt.com/"+item.replace(/&amp;/g,"&")
+            if(taskData.taskList.indexOf(url)==-1){
+                taskData.taskList.push(url)
             }
-            url=url.replace(/&amp;/g,"&")
-            if(urlCache.indexOf(url)==-1){
-                if(isListUrl(url,listUrls)){
-                    urlCache.push(url)
-                    tempList.push(url)
-                }
-                if(isListUrl(url,itemUrls)){
-                    urlCache.push(url)
-                    tempItem.push(url)
-                }
-            }
-
         })
-        console.log(tempList)
+
+        //采集信息
+        var tempItem=Api.search(html,[/tid=(\d+)/g])
         console.log(tempItem)
+        //forum.php?mod=viewthread&amp;tid=35641&amp;extra=page%3D237&amp;mobile=2
+        tempItem.forEach(function(item){
+            var url=item
+            if(dataList.indexOf(url)==-1){
+                dataList.push(url)
+            }
+        })
+        if(tempList.length){
+            fs.writeFileSync("data.txt",JSON.stringify(dataList))
+            fs.writeFileSync("taskData.txt",JSON.stringify(taskData))
+        }else{
+            ok=false
+        }
+        if(taskData.taskList.length<=taskData.curIndex){
+            ok=false
+        }
     }
 
     console.log("startAnt over")
 }))
-var transref=function (_route){
-    var optionalParam = /\((.*?)\)/g;
-    var escapeRegExp = /[\-{}\[\]+?.,\\\^$|#\s]/g;
-    var namedParam = /(\(\?)?:\w+/g;
-    var splatParam = /\*\w+/g;
-    var _route = _route.replace(escapeRegExp, '\\$&').replace(optionalParam, '(?:$1)?').replace(namedParam, function (match, optional) {
-        return optional ? match : '([^/?]+)';
-    }).replace(splatParam, '([^?].*?)');
-    return  new RegExp("^" + _route + "(?:\\?([\\s\\S]*))?$")
-}
-Api.startAnt(["http://www.168ytt.com/forum.php?mod=forumdisplay&fid=52&mobile=2"],[],[transref("http://www.168ytt.com/forum.php?mod=viewthread&tid=:id&extra=page%3D1&mobile=2")]).start()
+
+Api.startAnt(["http://www.168ytt.com/forum.php?mod=forumdisplay&fid=52&page=1&mobile=2"]).start()

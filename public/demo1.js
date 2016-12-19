@@ -12,18 +12,17 @@ var isListUrl=function(url,listUrls){
     return false
 }
 var fs=require("fs")
-Api.startAnt=eval(Wind.compile("async", function (startUrls) {
+Api.startAnt=eval(Wind.compile("async", function () {
 
     //获取一个列表html，解析添加list、item，重复这个过程
     //获取url
     var taskData={
         curIndex:0,
-        taskList:[].concat(startUrls)
+        taskList:["http://www.168ytt.com/forum.php?mod=forumdisplay&fid=52&page=1&mobile=2"]
     }
     if(fs.existsSync("taskData.txt")){
         taskData=JSON.parse(fs.readFileSync("taskData.txt").toString())
     }
-
     //提取了那些url
     var dataList=[]
     if(fs.existsSync("data.txt")){
@@ -72,4 +71,4 @@ Api.startAnt=eval(Wind.compile("async", function (startUrls) {
     console.log("startAnt over")
 }))
 
-Api.startAnt(["http://www.168ytt.com/forum.php?mod=forumdisplay&fid=52&page=1&mobile=2"]).start()
+Api.startAnt().start()

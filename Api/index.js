@@ -3,7 +3,8 @@ var Api=module.exports={
     mkdir:require("./mkdir"),
     replace:require("./replace"),
     search:require("./search"),
-    getContent:require("./getContent"),
+    getContent:require("./getContent").getContent,
+    postGbk:require("./getContent").postGbk,
 
     getInfo:require("./getInfo"),
     parseTpl:require("./parseTpl"),

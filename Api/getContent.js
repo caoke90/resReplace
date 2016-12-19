@@ -28,5 +28,23 @@ var getContent=Wind.Async.Binding.fromCallback(function(pathOrUrl,callback) {
     }
 
 })
-module.exports=getContent;
+
+var postGbk=Wind.Async.Binding.fromCallback(function(pathOrUrl,callback) {
+
+    request.post(pathOrUrl, function (error,response,data) {
+        if(!error) {
+            var body=data.toString();
+            if (/gb(2312|k)/i.test(response.headers['content-type'])||/<meta .*?charset=(["']?)gb(2312|k|18030)\1?/gi.test(body)||/encoding="gbk"/gi.test(body)) {
+                body = Iconv.decode(data, 'gb2312').toString()
+            }
+            callback(body)
+        }else{
+            callback("ddd")
+        }
+    })
+})
+module.exports={
+    getContent:getContent,
+    postGbk:postGbk
+};
 

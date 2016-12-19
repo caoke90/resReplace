@@ -3,7 +3,7 @@ var Wind=require("Wind")
 var Api=require("../Api")
 
 var fs=require("fs")
-Api.startAnt=eval(Wind.compile("async", function (startTask) {
+Api.startAnt=eval(Wind.compile("async", function (startTask,isneedFresh) {
 
     //获取一个列表html，解析添加list、item，重复这个过程
     //获取url
@@ -13,24 +13,28 @@ Api.startAnt=eval(Wind.compile("async", function (startTask) {
     }
     if(fs.existsSync("taskData.txt")){
         taskData=JSON.parse(fs.readFileSync("taskData.txt").toString())
-        if(taskData.curIndex==taskData.taskList.length){
-            startTask.forEach(function(url){
-                var index=taskData.taskList.indexOf(url)
-                if(index==-1){
-                    taskData.taskList.push(url)
-                }else{
-                    taskData.taskList.splice(index,1)
-                    taskData.taskList.push(url)
-                    taskData.curIndex--
+    }
+    //原来的任务已经完成了，添加新的人物
+    if(isneedFresh){
+        startTask.forEach(function(url){
+            var index=taskData.taskList.indexOf(url)
+            if(index==-1){
+                taskData.taskList.push(url)
+            }else{
+                taskData.taskList.splice(index,1)
+                taskData.taskList.push(url)
+                taskData.curIndex--
 
-                }
-            })
-        }
+            }
+        })
     }
     //提取了那些url
-    var dataList=[]
+    var dataData={
+        curIndex:0,
+        taskList:[]
+    }
     if(fs.existsSync("data.txt")){
-        dataList=JSON.parse(fs.readFileSync("data.txt").toString())
+        dataData=JSON.parse(fs.readFileSync("data.txt").toString())
     }
     var ok=true
     while(ok&&taskData.taskList.length>taskData.curIndex){
@@ -40,12 +44,12 @@ Api.startAnt=eval(Wind.compile("async", function (startTask) {
         var html=$await(Api.getContent(cururl))
 
         var tempList=Api.search(html,["forum.php?mod=forumdisplay&fid=*&amp;page=*&amp;mobile=2"])
-        var isRefresh=false
+        ok=false
         //添加新的任务
         tempList.forEach(function(item){
             var url="http://www.168ytt.com/"+item.replace(/&amp;/g,"&")
             if(taskData.taskList.indexOf(url)==-1){
-                isRefresh=true
+                ok=true
                 taskData.taskList.push(url)
             }
         })
@@ -55,30 +59,96 @@ Api.startAnt=eval(Wind.compile("async", function (startTask) {
         //forum.php?mod=viewthread&amp;tid=35641&amp;extra=page%3D237&amp;mobile=2
         tempItem.forEach(function(item){
             var url=item
-            if(dataList.indexOf(url)==-1){
+            if(dataData.taskList.indexOf(url)==-1){
                 console.log(url)
-                isRefresh=true
-                dataList.push(url)
+                ok=true
+                dataData.taskList.push(url)
             }
         })
-        if(isRefresh){
+        if(ok){
             //采集到的数据
-            fs.writeFileSync("data.txt",JSON.stringify(dataList))
+            fs.writeFileSync("data.txt",JSON.stringify(dataData))
 
             //执行中的任务
             fs.writeFileSync("taskData.txt",JSON.stringify(taskData))
         }else{
             //异常页面
             console.log("没有更新了")
-            ok=false
         }
     }
     console.log("startAnt over")
 }))
 
-Api.startAnt([
-    "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=52&page=1&mobile=2",
-    "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=53&page=1&mobile=2",
-    "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=57&page=1&mobile=2",
-    "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=58&page=1&mobile=2",
-    "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=70&page=1&mobile=2"]).start()
+
+
+var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
+
+    //提取了那些url
+    var taskData={
+        curIndex:0,
+        taskList:[]
+    }
+    if(fs.existsSync("data.txt")){
+        taskData=JSON.parse(fs.readFileSync("data.txt").toString())
+    }
+
+    var ok=true
+    while(ok&&taskData.taskList.length>taskData.curIndex){
+        var tid=taskData.taskList[taskData.curIndex++]
+        console.log(tid)
+        var cururl="http://www.168ytt.com/forum.php?mod=viewthread&tid="+tid+"&extra=page%3D237&mobile=2"
+        //获取html
+        var html=$await(Api.localstore.getAsync(tid))
+
+        if(!html){
+            html=$await(Api.getContent(cururl))
+        }
+        ok=false;
+        if(/\$\('#fastpostsubmit'\)/g.test(html)){
+            ok=true
+        }
+
+        if(/如果您要查看本帖隐藏内容请/g.test(html)){
+            var arr=Api.search(html,[/action="(forum.php.+?)"/,/name="formhash" value="(.+?)"/])
+            var data={
+                url:"http://www.168ytt.com/"+arr[0][0].replace(/amp;/g,"")+"&handlekey=fastpost&loc=1&inajax=1",
+                form:{
+                    formhash:arr[1][0],
+                    replysubmit:true,
+                    message:"回复123456789"
+                }
+            }
+            var xml=$await(Api.postGbk(data))
+            if(xml.indexOf("非常感谢，回复发布成功")>-1){
+
+                html=$await(Api.getContent(cururl))
+                $await(Api.localstore.setAsync(tid,html))
+                console.log("非常感谢，回复发布成功")
+
+            }else{
+                console.log("抱歉，您两次发表间隔少于 15 秒，请稍候再发表")
+                taskData.curIndex--
+            }
+            $await(Wind.Async.sleep(16000))
+        }
+
+        if(ok){
+            //执行中的任务
+            fs.writeFileSync("data.txt",JSON.stringify(taskData))
+        }
+    }
+}))
+
+var test=eval(Wind.compile("async", function (startTask,isneedFresh) {
+    $await(Api.startAnt([
+        "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=52&page=1&mobile=2",
+        "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=53&page=1&mobile=2",
+        "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=57&page=1&mobile=2",
+        "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=58&page=1&mobile=2",
+        "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=70&page=1&mobile=2"],false))
+
+   $await(getAllhtml())
+
+}))
+test().start()
+

@@ -1,0 +1,10 @@
+<style>
+    .block li{float: left;min-width: 100px;}
+</style>
+<div class="block">
+    <ul>
+        <%for(var i=0;i<obj.length;i++){var item=obj[i];%>
+        <li><a href="item?tid=<%=item%>"><%=item%></a></li>
+        <%}%>
+    </ul>
+</div>

@@ -3,7 +3,7 @@
 </style>
 <div class="block">
     <ul>
-        <%for(var i=0;i<obj.length;i++){var item=obj[i];%>
+        <%for(var i=0;i<obj.curIndex;i++){var item=obj.taskList[i];%>
         <li><a href="item?tid=<%=item%>"><%=item%></a></li>
         <%}%>
     </ul>

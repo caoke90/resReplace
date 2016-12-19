@@ -1,10 +1,14 @@
 <style>
-    .block li{float: left;min-width: 100px;}
+    .block li{float: left;min-width: 40%;margin-right: 20px;}
+    .block a{
+        color: #333;
+        text-decoration: none;
+    }
 </style>
 <div class="block">
     <ul>
-        <%for(var i=0;i<obj.curIndex;i++){var item=obj.taskList[i];%>
-        <li><a href="item?tid=<%=item%>"><%=item%></a></li>
+        <%for(var i=0;i<obj.length;i++){var item=obj[i];%>
+        <li><a href="item?tid=<%=item.tid%>"><%=item.title%></a><span style="float: right"><%=item.time%></span></li>
         <%}%>
     </ul>
 </div>

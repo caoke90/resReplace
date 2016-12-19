@@ -27,8 +27,7 @@ Api.startAnt=eval(Wind.compile("async", function (startTask,isneedFresh) {
 
             }
         })
-        //执行中的任务
-        fs.writeFileSync("pageData.txt",JSON.stringify(taskData))
+
     }
     //提取了那些url
     var dataData={
@@ -71,7 +70,7 @@ Api.startAnt=eval(Wind.compile("async", function (startTask,isneedFresh) {
                 dataData.taskList.push(url)
             }
         })
-        if(refresh){
+        if(ok){
             //采集到的数据
             fs.writeFileSync("tidData.txt",JSON.stringify(dataData))
 
@@ -94,7 +93,9 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
     }
     if(fs.existsSync("tidData.txt")){
         taskData=JSON.parse(fs.readFileSync("tidData.txt").toString())
-//        taskData.curIndex=0
+        console.log(taskData.curIndex)
+        console.log(taskData.taskList.length)
+
     }
 
     var ok=true
@@ -102,38 +103,41 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
         var tid=taskData.taskList[taskData.curIndex++]
         console.log(tid)
         var cururl="http://www.168ytt.com/forum.php?mod=viewthread&tid="+tid+"&extra=page%3D237&mobile=2"
+        console.log(cururl)
         //获取html
         var html=$await(Api.localstore.getAsync(tid))
 
         if(!html||/<html><body>/.test(html)){
             html=$await(Api.getContent(cururl))
-            if(/<title>每日签到/g.test(html)){
-                var arr=Api.search(html,[/action="(plugin.php.+?)"/,/name="formhash" value="(.+?)"/])
-                var data={
-                    url:"http://www.168ytt.com/"+arr[0][0].replace(/amp;/g,"")+"&handlekey=fastpost&loc=1&inajax=1",
-                    form:{
-                        formhash:arr[1][0],
-                        qdmode:"3",
-                        qdxq:"kx"
-                    }
-                }
-                var xml=$await(Api.postGbk(data))
-                console.log(xml)
-                html=$await(Api.getContent(cururl))
+
+            if(/\$\('#fastpostsubmit'\)/g.test(html)){
+                $await(Api.localstore.setAsync(tid,html))
             }
+        }
+        if(/<title>每日签到/g.test(html)){
+            var arr=Api.search(html,[/action="(plugin.php.+?)"/,/name="formhash" value="(.+?)"/])
+            var data={
+                url:"http://www.168ytt.com/"+arr[0][0].replace(/amp;/g,"")+"&handlekey=fastpost&loc=1&inajax=1",
+                form:{
+                    formhash:arr[1][0],
+                    qdmode:"3",
+                    qdxq:"kx"
+                }
+            }
+            var xml=$await(Api.postGbk(data))
+            console.log(xml)
+            html=$await(Api.getContent(cururl))
             if(/\$\('#fastpostsubmit'\)/g.test(html)){
                 $await(Api.localstore.setAsync(tid,html))
             }
         }
 
         ok=false;
-
-
         if(/\$\('#fastpostsubmit'\)/g.test(html)){
             ok=true
             //是否需要回复
-            if(/如果您要查看本帖隐藏内容请/g.test(html)){
-
+            if(!/src="forum.php\?mod=image&aid=\d+/g.test(html)){
+                console.log(taskData.curIndex)
                 var arr=Api.search(html,[/action="(forum.php.+?)"/,/name="formhash" value="(.+?)"/])
                 var data={
                     url:"http://www.168ytt.com/"+arr[0][0].replace(/amp;/g,"")+"&handlekey=fastpost&loc=1&inajax=1",
@@ -145,15 +149,21 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
                 }
                 var xml=$await(Api.postGbk(data))
                 if(xml.indexOf("非常感谢，回复发布成功")>-1){
-
-                    html=$await(Api.getContent(cururl))
-                    $await(Api.localstore.setAsync(tid,html))
                     console.log("非常感谢，回复发布成功")
 
+                    html=$await(Api.getContent(cururl))
+                    if(!/src="forum.php\?mod=image&aid=\d+/g.test(html)){
+                        var index=taskData.taskList.indexOf(tid)
+                        taskData.taskList.splice(index,1)
+                        taskData.curIndex--
+                    }else{
+                        $await(Api.localstore.setAsync(tid,html))
+                    }
                 }else{
                     console.log("抱歉，您两次发表间隔少于 15 秒，请稍候再发表")
                     taskData.curIndex--
                 }
+
                 $await(Wind.Async.sleep(16000))
             }
         }

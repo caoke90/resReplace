@@ -29,15 +29,11 @@ Api.startAnt=eval(Wind.compile("async", function () {
         dataList=JSON.parse(fs.readFileSync("data.txt").toString())
     }
     var ok=true
-    while(ok){
+    while(ok&&taskData.taskList.length>taskData.curIndex){
         var cururl=taskData.taskList[taskData.curIndex++]
         console.log(cururl)
         //获取html
         var html=$await(Api.getContent(cururl))
-        if(html.indexOf('<script language="javascript">window.location')>-1){
-            var arr=Api.search(html,["window.location=(**);"])
-            console.log(arr)
-        }
         var tempList=Api.search(html,["forum.php?mod=forumdisplay&fid=*&amp;page=*&amp;mobile=2"])
         //添加新的任务
         tempList.forEach(function(item){
@@ -61,9 +57,6 @@ Api.startAnt=eval(Wind.compile("async", function () {
             fs.writeFileSync("data.txt",JSON.stringify(dataList))
             fs.writeFileSync("taskData.txt",JSON.stringify(taskData))
         }else{
-            ok=false
-        }
-        if(taskData.taskList.length<=taskData.curIndex){
             ok=false
         }
     }

@@ -3,7 +3,7 @@ var Wind=require("Wind")
 var Api=require("../Api")
 
 var fs=require("fs")
-Api.startAnt=eval(Wind.compile("async", function () {
+Api.startAnt=eval(Wind.compile("async", function (startTask) {
 
     //获取一个列表html，解析添加list、item，重复这个过程
     //获取url
@@ -13,6 +13,18 @@ Api.startAnt=eval(Wind.compile("async", function () {
     }
     if(fs.existsSync("taskData.txt")){
         taskData=JSON.parse(fs.readFileSync("taskData.txt").toString())
+        startTask.forEach(function(url){
+            var index=taskData.taskList.indexOf(url)
+            if(index==-1){
+                taskData.taskList.push(url)
+            }else{
+                if(taskData.curIndex==taskData.taskList.length){
+                    taskData.taskList.splice(index,1)
+                    taskData.taskList.push(url)
+                    taskData.curIndex--
+                }
+            }
+        })
     }
     //提取了那些url
     var dataList=[]
@@ -38,11 +50,11 @@ Api.startAnt=eval(Wind.compile("async", function () {
 
         //采集信息
         var tempItem=Api.search(html,[/tid=(\d+)/g])
-        console.log(tempItem)
         //forum.php?mod=viewthread&amp;tid=35641&amp;extra=page%3D237&amp;mobile=2
         tempItem.forEach(function(item){
             var url=item
             if(dataList.indexOf(url)==-1){
+                console.log(url)
                 isRefresh=true
                 dataList.push(url)
             }
@@ -61,4 +73,4 @@ Api.startAnt=eval(Wind.compile("async", function () {
     console.log("startAnt over")
 }))
 
-Api.startAnt().start()
+Api.startAnt(["http://www.168ytt.com/forum.php?mod=forumdisplay&fid=52&page=1&mobile=2"]).start()

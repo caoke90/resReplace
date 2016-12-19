@@ -13,7 +13,6 @@ Api.startAnt=eval(Wind.compile("async", function () {
     }
     if(fs.existsSync("taskData.txt")){
         taskData=JSON.parse(fs.readFileSync("taskData.txt").toString())
-        taskData.curIndex=0
     }
     //提取了那些url
     var dataList=[]
@@ -51,13 +50,14 @@ Api.startAnt=eval(Wind.compile("async", function () {
         if(isRefresh){
             //采集到的数据
             fs.writeFileSync("data.txt",JSON.stringify(dataList))
+
             //执行中的任务
             fs.writeFileSync("taskData.txt",JSON.stringify(taskData))
         }else{
+            //异常页面
             ok=false
         }
     }
-
     console.log("startAnt over")
 }))
 

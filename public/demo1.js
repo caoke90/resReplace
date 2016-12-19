@@ -9,22 +9,23 @@ Api.startAnt=eval(Wind.compile("async", function (startTask) {
     //获取url
     var taskData={
         curIndex:0,
-        taskList:["http://www.168ytt.com/forum.php?mod=forumdisplay&fid=52&page=1&mobile=2"]
+        taskList:startTask
     }
     if(fs.existsSync("taskData.txt")){
         taskData=JSON.parse(fs.readFileSync("taskData.txt").toString())
-        startTask.forEach(function(url){
-            var index=taskData.taskList.indexOf(url)
-            if(index==-1){
-                taskData.taskList.push(url)
-            }else{
-                if(taskData.curIndex==taskData.taskList.length){
+        if(taskData.curIndex==taskData.taskList.length){
+            startTask.forEach(function(url){
+                var index=taskData.taskList.indexOf(url)
+                if(index==-1){
+                    taskData.taskList.push(url)
+                }else{
                     taskData.taskList.splice(index,1)
                     taskData.taskList.push(url)
                     taskData.curIndex--
+
                 }
-            }
-        })
+            })
+        }
     }
     //提取了那些url
     var dataList=[]
@@ -37,6 +38,7 @@ Api.startAnt=eval(Wind.compile("async", function (startTask) {
         console.log(cururl)
         //获取html
         var html=$await(Api.getContent(cururl))
+
         var tempList=Api.search(html,["forum.php?mod=forumdisplay&fid=*&amp;page=*&amp;mobile=2"])
         var isRefresh=false
         //添加新的任务
@@ -67,10 +69,16 @@ Api.startAnt=eval(Wind.compile("async", function (startTask) {
             fs.writeFileSync("taskData.txt",JSON.stringify(taskData))
         }else{
             //异常页面
+            console.log("没有更新了")
             ok=false
         }
     }
     console.log("startAnt over")
 }))
 
-Api.startAnt(["http://www.168ytt.com/forum.php?mod=forumdisplay&fid=52&page=1&mobile=2"]).start()
+Api.startAnt([
+    "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=52&page=1&mobile=2",
+    "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=53&page=1&mobile=2",
+    "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=57&page=1&mobile=2",
+    "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=58&page=1&mobile=2",
+    "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=70&page=1&mobile=2"]).start()

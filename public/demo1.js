@@ -11,8 +11,8 @@ Api.startAnt=eval(Wind.compile("async", function (startTask,isneedFresh) {
         curIndex:0,
         taskList:startTask
     }
-    if(fs.existsSync("taskData.txt")){
-        taskData=JSON.parse(fs.readFileSync("taskData.txt").toString())
+    if(fs.existsSync("pageData.txt")){
+        taskData=JSON.parse(fs.readFileSync("pageData.txt").toString())
     }
     //原来的任务已经完成了，添加新的人物
     if(isneedFresh){
@@ -33,8 +33,8 @@ Api.startAnt=eval(Wind.compile("async", function (startTask,isneedFresh) {
         curIndex:0,
         taskList:[]
     }
-    if(fs.existsSync("data.txt")){
-        dataData=JSON.parse(fs.readFileSync("data.txt").toString())
+    if(fs.existsSync("tidData.txt")){
+        dataData=JSON.parse(fs.readFileSync("tidData.txt").toString())
     }
     var ok=true
     while(ok&&taskData.taskList.length>taskData.curIndex){
@@ -67,10 +67,10 @@ Api.startAnt=eval(Wind.compile("async", function (startTask,isneedFresh) {
         })
         if(ok){
             //采集到的数据
-            fs.writeFileSync("data.txt",JSON.stringify(dataData))
+            fs.writeFileSync("tidData.txt",JSON.stringify(dataData))
 
             //执行中的任务
-            fs.writeFileSync("taskData.txt",JSON.stringify(taskData))
+            fs.writeFileSync("pageData.txt",JSON.stringify(taskData))
         }else{
             //异常页面
             console.log("没有更新了")
@@ -79,8 +79,6 @@ Api.startAnt=eval(Wind.compile("async", function (startTask,isneedFresh) {
     console.log("startAnt over")
 }))
 
-
-
 var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
 
     //提取了那些url
@@ -88,8 +86,8 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
         curIndex:0,
         taskList:[]
     }
-    if(fs.existsSync("data.txt")){
-        taskData=JSON.parse(fs.readFileSync("data.txt").toString())
+    if(fs.existsSync("tidData.txt")){
+        taskData=JSON.parse(fs.readFileSync("tidData.txt").toString())
     }
 
     var ok=true
@@ -134,7 +132,7 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
 
         if(ok){
             //执行中的任务
-            fs.writeFileSync("data.txt",JSON.stringify(taskData))
+            fs.writeFileSync("tidData.txt",JSON.stringify(taskData))
         }
     }
 }))

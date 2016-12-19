@@ -10,6 +10,7 @@ module.exports={
         }
         content=content.replace(/href="forum.php/g,'href="http://www.168ytt.com/forum.php')
         content=content.replace(/src="forum.php/g,'src="http://www.168ytt.com/forum.php')
+        content=content.replace(/m3m4_ck/g,'')
         next(content)
     }))
 }

@@ -1,16 +1,7 @@
 var glob=require("glob")
 var Wind=require("Wind")
 var Api=require("../Api")
-var isListUrl=function(url,listUrls){
-    var arr2=listUrls
-    for(var i=0;i<arr2.length;i++){
-        var regex= arr2[i]
-        if(regex.test(url)){
-            return true
-        }
-    }
-    return false
-}
+
 var fs=require("fs")
 Api.startAnt=eval(Wind.compile("async", function () {
 
@@ -22,6 +13,7 @@ Api.startAnt=eval(Wind.compile("async", function () {
     }
     if(fs.existsSync("taskData.txt")){
         taskData=JSON.parse(fs.readFileSync("taskData.txt").toString())
+        taskData.curIndex=0
     }
     //提取了那些url
     var dataList=[]
@@ -35,10 +27,12 @@ Api.startAnt=eval(Wind.compile("async", function () {
         //获取html
         var html=$await(Api.getContent(cururl))
         var tempList=Api.search(html,["forum.php?mod=forumdisplay&fid=*&amp;page=*&amp;mobile=2"])
+        var isRefresh=false
         //添加新的任务
         tempList.forEach(function(item){
             var url="http://www.168ytt.com/"+item.replace(/&amp;/g,"&")
             if(taskData.taskList.indexOf(url)==-1){
+                isRefresh=true
                 taskData.taskList.push(url)
             }
         })
@@ -50,11 +44,14 @@ Api.startAnt=eval(Wind.compile("async", function () {
         tempItem.forEach(function(item){
             var url=item
             if(dataList.indexOf(url)==-1){
+                isRefresh=true
                 dataList.push(url)
             }
         })
-        if(tempList.length){
+        if(isRefresh){
+            //采集到的数据
             fs.writeFileSync("data.txt",JSON.stringify(dataList))
+            //执行中的任务
             fs.writeFileSync("taskData.txt",JSON.stringify(taskData))
         }else{
             ok=false

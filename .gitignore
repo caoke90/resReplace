@@ -1,0 +1,2 @@
+/Api/redis/*.rdb
+/Api/redis/dump.rdb

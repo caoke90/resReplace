@@ -1,14 +1,51 @@
 <style>
-    .block li{float: left;min-width: 40%;margin-right: 20px;}
+    .block li{float: left;min-width: 40%;margin-right: 20px;list-style: none;}
     .block a{
         color: #333;
         text-decoration: none;
     }
+    .red li{color: blue;}
+    .red a{color: blue;}
 </style>
-<div class="block">
+<div style="margin: 0 auto;text-align: center;">
+    <input type="text" id="info" value="" placeholder="输入查询内容">
+    <input type="button" value="查询" id="search">
+</div>
+<div class="block red" id="show">
+    <ul></ul>
+</div>
+<div class="block" id="app">
     <ul>
         <%for(var i=0;i<obj.length;i++){var item=obj[i];%>
-        <li><a href="item?tid=<%=item.tid%>"><%=item.title%></a><span style="float: right"><%=item.time%></span></li>
+        <li><a href="<%=item.tid%>.html"><%=item.tid%></a><span style="float: right"><%=item.time%></span></li>
         <%}%>
     </ul>
 </div>
+<script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+<script>
+    var cache={}
+    $("#info").on("keydown",function(e){
+        if(e.keyCode==13){
+            $("#search").trigger("click")
+        }
+    })
+    $("#search").on("click",function(){
+        var info=$("#info").val()
+        $("#app li").each(function(){
+            var url=$("a",this).attr("href")
+            search(url,info,this)
+        })
+    })
+    function search(url,info,ele){
+        if(!cache[url]){
+            $.get("nye/"+url,function(html){
+                cache[url]=html
+                search(url,info,ele)
+            })
+        }else{
+            if(cache[url].indexOf(info)>-1){
+                $("#show ul").append($(ele))
+            }
+        }
+    }
+</script>

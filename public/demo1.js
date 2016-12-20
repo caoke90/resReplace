@@ -83,7 +83,7 @@ Api.startAnt=eval(Wind.compile("async", function (startTask,isneedFresh) {
     }
     console.log("startAnt over")
 }))
-
+//网络异常、签到、404、反爬虫、无图片页面
 var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
 
     //提取了那些url
@@ -95,6 +95,10 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
         taskData=JSON.parse(fs.readFileSync("tidData.txt").toString())
         console.log(taskData.curIndex)
         console.log(taskData.taskList.length)
+//        taskData.curIndex=0
+//        taskData.taskList=taskData.taskList.sort(function(item1,item2){
+//            return Number(item1)>Number(item2)?-1:1
+//        })
 
     }
 
@@ -107,14 +111,32 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
         //获取html
         var html=$await(Api.localstore.getAsync(tid))
 
-        if(!html||/<html><body>/.test(html)){
+        if(!html){
             html=$await(Api.getContent(cururl))
-
             if(/\$\('#fastpostsubmit'\)/g.test(html)){
                 $await(Api.localstore.setAsync(tid,html))
             }
         }
+
+        //网络异常
+        if(!html){
+            console.log("网络异常")
+            ok=false
+        }
+        //防止爬虫
+        if(/<html><body><script/.test(html)){
+            console.log("反爬虫")
+            cururl="http://www.168ytt.com"+eval(/window\.location=([\d\D]+);/.exec(html)[1])
+            html=$await(Api.getContent(cururl))
+            if(/\$\('#fastpostsubmit'\)/g.test(html)){
+                $await(Api.localstore.setAsync(tid,html))
+            }
+            console.log(cururl)
+        }
+
+        //每日签到
         if(/<title>每日签到/g.test(html)){
+            cosnole.log("签到")
             var arr=Api.search(html,[/action="(plugin.php.+?)"/,/name="formhash" value="(.+?)"/])
             var data={
                 url:"http://www.168ytt.com/"+arr[0][0].replace(/amp;/g,"")+"&handlekey=fastpost&loc=1&inajax=1",
@@ -132,12 +154,20 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
             }
         }
 
-        ok=false;
+        //非内容页面
+        if(!/\$\('#fastpostsubmit'\)/g.test(html)){
+            console.log("非内容页面")
+            html=$await(Api.getContent(cururl))
+            if(/\$\('#fastpostsubmit'\)/g.test(html)){
+                $await(Api.localstore.setAsync(tid,html))
+            }
+        }
         if(/\$\('#fastpostsubmit'\)/g.test(html)){
-            ok=true
+
             //是否需要回复
             if(!/src="forum.php\?mod=image&aid=\d+/g.test(html)){
                 console.log(taskData.curIndex)
+
                 var arr=Api.search(html,[/action="(forum.php.+?)"/,/name="formhash" value="(.+?)"/])
                 var data={
                     url:"http://www.168ytt.com/"+arr[0][0].replace(/amp;/g,"")+"&handlekey=fastpost&loc=1&inajax=1",
@@ -149,16 +179,19 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
                 }
                 var xml=$await(Api.postGbk(data))
                 if(xml.indexOf("非常感谢，回复发布成功")>-1){
-                    console.log("非常感谢，回复发布成功")
-
                     html=$await(Api.getContent(cururl))
-                    if(!/src="forum.php\?mod=image&aid=\d+/g.test(html)){
-                        var index=taskData.taskList.indexOf(tid)
-                        taskData.taskList.splice(index,1)
-                        taskData.curIndex--
-                    }else{
+
+                    if(/\$\('#fastpostsubmit'\)/g.test(html)){
                         $await(Api.localstore.setAsync(tid,html))
+                        if(!/src="forum.php\?mod=image&aid=\d+/g.test(html)){
+                            console.log("无图片页面")
+                            var index=taskData.taskList.indexOf(tid)
+                            taskData.taskList.splice(index,1)
+                            taskData.curIndex--
+                        }
+                        fs.writeFileSync("tidData.txt",JSON.stringify(taskData))
                     }
+                    console.log("非常感谢，回复发布成功")
                 }else{
                     console.log("抱歉，您两次发表间隔少于 15 秒，请稍候再发表")
                     taskData.curIndex--
@@ -166,13 +199,38 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
 
                 $await(Wind.Async.sleep(16000))
             }
-        }
-
-        if(ok){
-            //执行中的任务
-            fs.writeFileSync("tidData.txt",JSON.stringify(taskData))
+        }else{
+            taskData.curIndex--
         }
     }
+
+    var listData=[]
+    for(var i=0;i<taskData.curIndex;i++){
+        var tid=taskData.taskList[i]
+        var html=$await(Api.localstore.getAsync(tid))
+        html=html.replace(/href="forum.php/g,'href="http://www.168ytt.com/forum.php')
+        html=html.replace(/src="forum.php/g,'src="http://www.168ytt.com/forum.php')
+        html=html.replace(/m3m4_ck/g,'')
+        fs.writeFileSync(__dirname+"/nye/"+tid+".html",html)
+
+        if(/\d{4}-\d{1,2}-\d{1,2} \d+:\d+:\d+/g.exec(html)){
+            var json={
+                tid:tid,
+                time:/(\d{4}-\d{1,2}-\d{1,2}) \d+:\d+:\d+/g.exec(html)[1],
+                title:/<title>([\d\D]+?)<\/title>/g.exec(html)[1].replace(/&#9654;[\d\D]+?Powered by Discuz!/,"")
+            }
+            listData.push(json)
+        }
+    }
+    listData=listData.sort(function(item1,item2){
+        var p1=new Date(item1.time).getTime()
+        var p2=new Date(item2.time).getTime()
+        return p1>p2?-1:1
+    })
+    var tpl=fs.readFileSync("list.ejs").toString()
+    var listhtml=Api.parseTpl(tpl,listData)
+    fs.writeFileSync(__dirname+"/list.html",listhtml)
+    console.log("已停止")
 }))
 
 var test=eval(Wind.compile("async", function (startTask,isneedFresh) {
@@ -181,7 +239,8 @@ var test=eval(Wind.compile("async", function (startTask,isneedFresh) {
         "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=53&page=1&mobile=2",
         "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=57&page=1&mobile=2",
         "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=58&page=1&mobile=2",
-        "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=70&page=1&mobile=2"],false))
+        "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=70&page=1&mobile=2"
+    ],false))
 
    $await(getAllhtml())
 

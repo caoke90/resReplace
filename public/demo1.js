@@ -96,14 +96,12 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
         console.log(taskData.curIndex)
         console.log(taskData.taskList.length)
 //        taskData.curIndex=0
-//        taskData.taskList=taskData.taskList.sort(function(item1,item2){
-//            return Number(item1)>Number(item2)?-1:1
-//        })
+//        taskData.length=taskData.taskList.length
 
     }
 
     var ok=true
-    while(ok&&taskData.taskList.length>taskData.curIndex){
+    while(ok&&taskData.length>taskData.curIndex){
         var tid=taskData.taskList[taskData.curIndex++]
         console.log(tid)
         var cururl="http://www.168ytt.com/forum.php?mod=viewthread&tid="+tid+"&extra=page%3D237&mobile=2"
@@ -113,9 +111,7 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
 
         if(!html){
             html=$await(Api.getContent(cururl))
-            if(/\$\('#fastpostsubmit'\)/g.test(html)){
-                $await(Api.localstore.setAsync(tid,html))
-            }
+            $await(Api.localstore.setAsync(tid,html))
         }
 
         //网络异常
@@ -136,7 +132,7 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
 
         //每日签到
         if(/<title>每日签到/g.test(html)){
-            cosnole.log("签到")
+            console.log("签到")
             var arr=Api.search(html,[/action="(plugin.php.+?)"/,/name="formhash" value="(.+?)"/])
             var data={
                 url:"http://www.168ytt.com/"+arr[0][0].replace(/amp;/g,"")+"&handlekey=fastpost&loc=1&inajax=1",
@@ -185,9 +181,10 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
                         $await(Api.localstore.setAsync(tid,html))
                         if(!/src="forum.php\?mod=image&aid=\d+/g.test(html)){
                             console.log("无图片页面")
-                            var index=taskData.taskList.indexOf(tid)
-                            taskData.taskList.splice(index,1)
-                            taskData.curIndex--
+                            var temp=taskData.taskList[--taskData.length]
+                            taskData.taskList[--taskData.curIndex]=temp
+                            taskData.taskList[taskData.length]=tid
+
                         }
                         fs.writeFileSync("tidData.txt",JSON.stringify(taskData))
                     }
@@ -205,6 +202,8 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
     }
     fs.writeFileSync("tidData.txt",JSON.stringify(taskData))
     var listData=[]
+    var allData=[]
+    var jianzhiData=[]
     for(var i=0;i<taskData.curIndex;i++){
         var tid=taskData.taskList[i]
         var html=$await(Api.localstore.getAsync(tid))
@@ -215,25 +214,47 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
         if(!fs.existsSync(__dirname+"/nye/"+tid+".html")){
             fs.writeFileSync(__dirname+"/nye/"+tid+".html",html)
         }
-
-        if(/\d{4}-\d{1,2}-\d{1,2} \d+:\d+:\d+/g.exec(html)){
-            var json={
-                tid:tid,
-                time:/(\d{4}-\d{1,2}-\d{1,2}) \d+:\d+:\d+/g.exec(html)[1],
-                title:/<title>([\d\D]+?)<\/title>/g.exec(html)[1].replace(/&#9654;[\d\D]+?Powered by Discuz!/,"")
-            }
-            listData.push(json)
+        var json={
+            tid:tid,
+            time:new Date().getFullYear()+"-"+(new Date().getMonth()+1)+"-"+new Date().getDate(),
+            title:/<title>([\d\D]+?)<\/title>/g.exec(html)[1].replace(/&#9654;[\d\D]+?Powered by Discuz!/,""),
+            html:html
         }
+        if(/\d{4}-\d{1,2}-\d{1,2} \d+:\d+:\d+/g.exec(html)){
+            json.time=/(\d{4}-\d{1,2}-\d{1,2}) \d+:\d+:\d+/g.exec(html)[1]
+        }else{
+            if(/昨天&nbsp;/g.exec(html)){
+                json.time=new Date().getFullYear()+"-"+(new Date().getMonth()+1)+"-"+(new Date().getDate()-1)
+            }
+            if(/(\d+)&nbsp;天前/g.exec(html)){
+                json.time=new Date().getFullYear()+"-"+(new Date().getMonth()+1)+"-"+(new Date().getDate()-Number(/(\d+)&nbsp;天前/g.exec(html)[1]))
+            }
+        }
+        allData.push(json)
     }
-    listData=listData.sort(function(item1,item2){
+
+    allData=allData.sort(function(item1,item2){
         var p1=new Date(item1.time).getTime()
         var p2=new Date(item2.time).getTime()
         return p1>p2?-1:1
     })
+    allData.forEach(function(json){
+        if(!/会所/g.test(json.title)){
+            jianzhiData.push(json)
+            if(!/本帖隐藏的内容需要积分高于 .+ 才可浏览/g.test(json.html)){
+                listData.push(json)
+            }
+        }
+    })
+
 
     var tpl=fs.readFileSync("list.ejs").toString()
     var listhtml=Api.parseTpl(tpl,listData)
+    var allhtml=Api.parseTpl(tpl,allData)
+    var jianzhihtml=Api.parseTpl(tpl,jianzhiData)
     fs.writeFileSync(__dirname+"/list.html",listhtml)
+    fs.writeFileSync(__dirname+"/jianzhi.html",jianzhihtml)
+    fs.writeFileSync(__dirname+"/all.html",allhtml)
     console.log("已停止")
 }))
 
@@ -244,7 +265,7 @@ var test=eval(Wind.compile("async", function (startTask,isneedFresh) {
         "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=57&page=1&mobile=2",
         "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=58&page=1&mobile=2",
         "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=70&page=1&mobile=2"
-    ],true))
+    ],false))
 
    $await(getAllhtml())
 

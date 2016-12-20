@@ -95,7 +95,7 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
         taskData=JSON.parse(fs.readFileSync("tidData.txt").toString())
         console.log(taskData.curIndex)
         console.log(taskData.taskList.length)
-//        taskData.curIndex=0
+        taskData.curIndex=0
 //        taskData.length=taskData.taskList.length
 
     }
@@ -197,7 +197,9 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
                 $await(Wind.Async.sleep(16000))
             }
         }else{
-            taskData.curIndex--
+            var temp=taskData.taskList[--taskData.length]
+            taskData.taskList[--taskData.curIndex]=temp
+            taskData.taskList[taskData.length]=tid
         }
     }
     fs.writeFileSync("tidData.txt",JSON.stringify(taskData))

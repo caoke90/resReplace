@@ -203,7 +203,7 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
             taskData.curIndex--
         }
     }
-
+    fs.writeFileSync("tidData.txt",JSON.stringify(taskData))
     var listData=[]
     for(var i=0;i<taskData.curIndex;i++){
         var tid=taskData.taskList[i]
@@ -211,7 +211,10 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
         html=html.replace(/href="forum.php/g,'href="http://www.168ytt.com/forum.php')
         html=html.replace(/src="forum.php/g,'src="http://www.168ytt.com/forum.php')
         html=html.replace(/m3m4_ck/g,'')
-        fs.writeFileSync(__dirname+"/nye/"+tid+".html",html)
+        html=html.replace(/<?xml version="1.0" encoding="utf-8"\?>/g,'')
+        if(!fs.existsSync(__dirname+"/nye/"+tid+".html")){
+            fs.writeFileSync(__dirname+"/nye/"+tid+".html",html)
+        }
 
         if(/\d{4}-\d{1,2}-\d{1,2} \d+:\d+:\d+/g.exec(html)){
             var json={
@@ -227,6 +230,7 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
         var p2=new Date(item2.time).getTime()
         return p1>p2?-1:1
     })
+
     var tpl=fs.readFileSync("list.ejs").toString()
     var listhtml=Api.parseTpl(tpl,listData)
     fs.writeFileSync(__dirname+"/list.html",listhtml)
@@ -240,7 +244,7 @@ var test=eval(Wind.compile("async", function (startTask,isneedFresh) {
         "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=57&page=1&mobile=2",
         "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=58&page=1&mobile=2",
         "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=70&page=1&mobile=2"
-    ],false))
+    ],true))
 
    $await(getAllhtml())
 

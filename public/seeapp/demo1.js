@@ -208,6 +208,9 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
 //生成静态
 var makeStatic=eval(Wind.compile("async",function(){
     if(fs.existsSync("tidData.txt")) {
+        if(!fs.existsSync(__dirname+"/nye")){
+            fs.mkdirSync(__dirname+"/nye")
+        }
         var taskData = JSON.parse(fs.readFileSync("tidData.txt").toString())
         //生成静态
         var listData = []

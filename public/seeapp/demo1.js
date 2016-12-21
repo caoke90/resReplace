@@ -1,5 +1,6 @@
 var glob=require("glob")
 var Wind=require("Wind")
+var request=require("./request")
 var Api=require("../Api")
 
 var fs=require("fs")
@@ -42,7 +43,7 @@ Api.startAnt=eval(Wind.compile("async", function (startTask,isneedFresh) {
         var cururl=taskData.taskList[taskData.curIndex++]
         console.log(cururl)
         //获取html
-        var html=$await(Api.getContent(cururl))
+        var html=$await(request.getContent(cururl))
         if(!/<div class="threadlist">/g.test(html)){
             console.log(html)
             ok=false
@@ -109,7 +110,7 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
         var html=$await(Api.localstore.getAsync(tid))
 
         if(!html){
-            html=$await(Api.getContent(cururl))
+            html=$await(request.getContent(cururl))
             $await(Api.localstore.setAsync(tid,html))
         }
 
@@ -122,7 +123,7 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
         if(/<html><body><script/.test(html)){
             console.log("反爬虫")
             cururl="http://www.168ytt.com"+eval(/window\.location=([\d\D]+);/.exec(html)[1])
-            html=$await(Api.getContent(cururl))
+            html=$await(request.getContent(cururl))
             if(/\$\('#fastpostsubmit'\)/g.test(html)){
                 $await(Api.localstore.setAsync(tid,html))
             }
@@ -141,9 +142,9 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
                     qdxq:"kx"
                 }
             }
-            var xml=$await(Api.postGbk(data))
+            var xml=$await(request.postGbk(data))
             console.log(xml)
-            html=$await(Api.getContent(cururl))
+            html=$await(request.getContent(cururl))
             if(/\$\('#fastpostsubmit'\)/g.test(html)){
                 $await(Api.localstore.setAsync(tid,html))
             }
@@ -152,7 +153,7 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
         //非内容页面
         if(!/\$\('#fastpostsubmit'\)/g.test(html)){
             console.log("非内容页面")
-            html=$await(Api.getContent(cururl))
+            html=$await(request.getContent(cururl))
             if(/\$\('#fastpostsubmit'\)/g.test(html)){
                 $await(Api.localstore.setAsync(tid,html))
             }
@@ -172,9 +173,9 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
                         message:"回复123456789"
                     }
                 }
-                var xml=$await(Api.postGbk(data))
+                var xml=$await(request.postGbk(data))
                 if(xml.indexOf("非常感谢，回复发布成功")>-1){
-                    html=$await(Api.getContent(cururl))
+                    html=$await(request.getContent(cururl))
 
                     if(/\$\('#fastpostsubmit'\)/g.test(html)){
                         $await(Api.localstore.setAsync(tid,html))

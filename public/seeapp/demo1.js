@@ -1,9 +1,10 @@
 var glob=require("glob")
 var Wind=require("Wind")
 var request=require("./request")
-var Api=require("../Api")
+var Api=require("../../Api")
 
 var fs=require("fs")
+//爬取列表
 Api.startAnt=eval(Wind.compile("async", function (startTask,isneedFresh) {
 
     //获取一个列表html，解析添加list、item，重复这个过程
@@ -33,10 +34,12 @@ Api.startAnt=eval(Wind.compile("async", function (startTask,isneedFresh) {
     //提取了那些url
     var dataData={
         curIndex:0,
+        length:0,
         taskList:[]
     }
     if(fs.existsSync("tidData.txt")){
         dataData=JSON.parse(fs.readFileSync("tidData.txt").toString())
+//        dataData.length=dataData.taskList.length
     }
     var ok=true
     while(ok&&taskData.taskList.length>taskData.curIndex){
@@ -68,7 +71,8 @@ Api.startAnt=eval(Wind.compile("async", function (startTask,isneedFresh) {
             if(dataData.taskList.indexOf(url)==-1){
                 console.log(url)
                 refresh=true
-                dataData.taskList.push(url)
+                dataData.taskList.splice(dataData.curIndex,0,url)
+                dataData.length++
             }
         })
         if(ok){
@@ -124,9 +128,7 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
             console.log("反爬虫")
             cururl="http://www.168ytt.com"+eval(/window\.location=([\d\D]+);/.exec(html)[1])
             html=$await(request.getContent(cururl))
-            if(/\$\('#fastpostsubmit'\)/g.test(html)){
-                $await(Api.localstore.setAsync(tid,html))
-            }
+            $await(Api.localstore.setAsync(tid,html))
             console.log(cururl)
         }
 
@@ -206,11 +208,28 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
 
     console.log("已停止")
 }))
+var imageTobase64=eval(Wind.compile("async",function(html){
+
+    var arr=Api.search(html,[
+        /http:\/\/www\.168ytt\.com\/forum.php\?mod=image&aid=.+?&type=fixnone/g
+    ])
+    for(var i=0;i<arr.length;i++){
+        var url=arr[i]
+        var base64=$await(request.getBase64(url))
+        html=html.replace(url,base64)
+    }
+    return html;
+}))
 //生成静态
 var makeStatic=eval(Wind.compile("async",function(){
+
     if(fs.existsSync("tidData.txt")) {
-        if(!fs.existsSync(__dirname+"/nye")){
-            fs.mkdirSync(__dirname+"/nye")
+        var releaseDir=__dirname+"/seeapp"
+        if(!fs.existsSync(releaseDir)){
+            fs.mkdirSync(releaseDir)
+        }
+        if(!fs.existsSync(releaseDir+"/nye")){
+            fs.mkdirSync(releaseDir+"/nye")
         }
         var taskData = JSON.parse(fs.readFileSync("tidData.txt").toString())
         //生成静态
@@ -219,13 +238,17 @@ var makeStatic=eval(Wind.compile("async",function(){
         var jianzhiData = []
         for (var i = 0; i < taskData.curIndex; i++) {
             var tid = taskData.taskList[i]
+            console.log(tid)
+            console.log(i)
             var html = $await(Api.localstore.getAsync(tid))
             html = html.replace(/href="forum.php/g, 'href="http://www.168ytt.com/forum.php')
             html = html.replace(/src="forum.php/g, 'src="http://www.168ytt.com/forum.php')
+
             html = html.replace(/m3m4_ck/g, '')
             html = html.replace(/<?xml version="1.0" encoding="utf-8"\?>/g, '')
-            if (!fs.existsSync(__dirname + "/nye/" + tid + ".html")) {
-                fs.writeFileSync(__dirname + "/nye/" + tid + ".html", html)
+            if (!fs.existsSync(releaseDir + "/nye/" + tid + ".html")) {
+                html=$await(imageTobase64(html))
+                fs.writeFileSync(releaseDir + "/nye/" + tid + ".html", html)
             }
             var json = {
                 tid: tid,
@@ -265,9 +288,9 @@ var makeStatic=eval(Wind.compile("async",function(){
         var listhtml = Api.parseTpl(tpl, listData)
         var allhtml = Api.parseTpl(tpl, allData)
         var jianzhihtml = Api.parseTpl(tpl, jianzhiData)
-        fs.writeFileSync(__dirname + "/list.html", listhtml)
-        fs.writeFileSync(__dirname + "/jianzhi.html", jianzhihtml)
-        fs.writeFileSync(__dirname + "/all.html", allhtml)
+        fs.writeFileSync(releaseDir + "/list.html", listhtml)
+        fs.writeFileSync(releaseDir + "/jianzhi.html", jianzhihtml)
+        fs.writeFileSync(releaseDir + "/all.html", allhtml)
     }
 }))
 

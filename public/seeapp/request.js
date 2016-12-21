@@ -44,3 +44,26 @@ request.postGbk=Wind.Async.Binding.fromCallback(function(pathOrUrl,callback) {
     })
 })
 
+request.getBase64=Wind.Async.Binding.fromCallback(function(pathOrUrl,callback) {
+    var selfFunc=arguments.callee
+    request(pathOrUrl, function (error,response,data) {
+        var html=data.toString()
+        //防止爬虫
+        if(/<html><body><script/.test(html)){
+            console.log("反爬虫")
+            console.log(html)
+            var cururl="http://www.168ytt.com"+eval(/window\.location=([\d\D]+);/.exec(html)[1])
+            selfFunc(cururl,callback)
+            return;
+        }
+        if(!error) {
+            var type=response.headers["content-type"]
+            var prefix="data:"+type+";base64,";
+            var base64=data.toString("base64")
+            var body=prefix+base64
+            callback(body)
+        }else{
+            callback("")
+        }
+    })
+})

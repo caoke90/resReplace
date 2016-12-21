@@ -13,6 +13,7 @@ module.exports={
             if(/\d{4}-\d{1,2}-\d{1,2} \d+:\d+:\d+/g.exec(html)){
                 var json={
                     tid:tid,
+                    url:"item?tid="+tid,
                     time:/(\d{4}-\d{1,2}-\d{1,2}) \d+:\d+:\d+/g.exec(html)[1],
                     title:/<title>([\d\D]+?)<\/title>/g.exec(html)[1].replace(/&#9654;[\d\D]+?Powered by Discuz!/,"")
                 }

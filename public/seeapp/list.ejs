@@ -23,7 +23,7 @@
 <div class="block" id="app">
     <ul>
         <%for(var i=0;i<obj.length;i++){var item=obj[i];%>
-        <li><a href="nye/<%=item.tid%>.html"><%=item.title%></a><span class="fr"><%=item.time%></span></li>
+        <li><a href="<%=item.url%>"><%=item.title%></a><span class="fr"><%=item.time%></span></li>
         <%}%>
     </ul>
 </div>

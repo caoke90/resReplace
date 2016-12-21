@@ -96,8 +96,7 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
         console.log(taskData.curIndex)
         console.log(taskData.taskList.length)
         taskData.curIndex=0
-//        taskData.length=taskData.taskList.length
-
+        taskData.length=taskData.length||taskData.taskList.length
     }
 
     var ok=true
@@ -203,61 +202,69 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
         }
     }
     fs.writeFileSync("tidData.txt",JSON.stringify(taskData))
-    var listData=[]
-    var allData=[]
-    var jianzhiData=[]
-    for(var i=0;i<taskData.curIndex;i++){
-        var tid=taskData.taskList[i]
-        var html=$await(Api.localstore.getAsync(tid))
-        html=html.replace(/href="forum.php/g,'href="http://www.168ytt.com/forum.php')
-        html=html.replace(/src="forum.php/g,'src="http://www.168ytt.com/forum.php')
-        html=html.replace(/m3m4_ck/g,'')
-        html=html.replace(/<?xml version="1.0" encoding="utf-8"\?>/g,'')
-        if(!fs.existsSync(__dirname+"/nye/"+tid+".html")){
-            fs.writeFileSync(__dirname+"/nye/"+tid+".html",html)
-        }
-        var json={
-            tid:tid,
-            time:new Date().getFullYear()+"-"+(new Date().getMonth()+1)+"-"+new Date().getDate(),
-            title:/<title>([\d\D]+?)<\/title>/g.exec(html)[1].replace(/&#9654;[\d\D]+?Powered by Discuz!/,""),
-            html:html
-        }
-        if(/\d{4}-\d{1,2}-\d{1,2} \d+:\d+:\d+/g.exec(html)){
-            json.time=/(\d{4}-\d{1,2}-\d{1,2}) \d+:\d+:\d+/g.exec(html)[1]
-        }else{
-            if(/昨天&nbsp;/g.exec(html)){
-                json.time=new Date().getFullYear()+"-"+(new Date().getMonth()+1)+"-"+(new Date().getDate()-1)
-            }
-            if(/(\d+)&nbsp;天前/g.exec(html)){
-                json.time=new Date().getFullYear()+"-"+(new Date().getMonth()+1)+"-"+(new Date().getDate()-Number(/(\d+)&nbsp;天前/g.exec(html)[1]))
-            }
-        }
-        allData.push(json)
-    }
 
-    allData=allData.sort(function(item1,item2){
-        var p1=new Date(item1.time).getTime()
-        var p2=new Date(item2.time).getTime()
-        return p1>p2?-1:1
-    })
-    allData.forEach(function(json){
-        if(!/会所/g.test(json.title)){
-            jianzhiData.push(json)
-            if(!/本帖隐藏的内容需要积分高于 .+ 才可浏览/g.test(json.html)){
-                listData.push(json)
-            }
-        }
-    })
-
-
-    var tpl=fs.readFileSync("list.ejs").toString()
-    var listhtml=Api.parseTpl(tpl,listData)
-    var allhtml=Api.parseTpl(tpl,allData)
-    var jianzhihtml=Api.parseTpl(tpl,jianzhiData)
-    fs.writeFileSync(__dirname+"/list.html",listhtml)
-    fs.writeFileSync(__dirname+"/jianzhi.html",jianzhihtml)
-    fs.writeFileSync(__dirname+"/all.html",allhtml)
     console.log("已停止")
+}))
+//生成静态
+var makeStatic=eval(Wind.compile("async",function(){
+    if(fs.existsSync("tidData.txt")) {
+        var taskData = JSON.parse(fs.readFileSync("tidData.txt").toString())
+        //生成静态
+        var listData = []
+        var allData = []
+        var jianzhiData = []
+        for (var i = 0; i < taskData.curIndex; i++) {
+            var tid = taskData.taskList[i]
+            var html = $await(Api.localstore.getAsync(tid))
+            html = html.replace(/href="forum.php/g, 'href="http://www.168ytt.com/forum.php')
+            html = html.replace(/src="forum.php/g, 'src="http://www.168ytt.com/forum.php')
+            html = html.replace(/m3m4_ck/g, '')
+            html = html.replace(/<?xml version="1.0" encoding="utf-8"\?>/g, '')
+            if (!fs.existsSync(__dirname + "/nye/" + tid + ".html")) {
+                fs.writeFileSync(__dirname + "/nye/" + tid + ".html", html)
+            }
+            var json = {
+                tid: tid,
+                url: "nye/" + tid + ".html",
+                time: new Date().getFullYear() + "-" + (new Date().getMonth() + 1) + "-" + new Date().getDate(),
+                title: /<title>([\d\D]+?)<\/title>/g.exec(html)[1].replace(/&#9654;[\d\D]+?Powered by Discuz!/, ""),
+                html: html
+            }
+            if (/\d{4}-\d{1,2}-\d{1,2} \d+:\d+:\d+/g.exec(html)) {
+                json.time = /(\d{4}-\d{1,2}-\d{1,2}) \d+:\d+:\d+/g.exec(html)[1]
+            } else {
+                if (/昨天&nbsp;/g.exec(html)) {
+                    json.time = new Date().getFullYear() + "-" + (new Date().getMonth() + 1) + "-" + (new Date().getDate() - 1)
+                }
+                if (/(\d+)&nbsp;天前/g.exec(html)) {
+                    json.time = new Date().getFullYear() + "-" + (new Date().getMonth() + 1) + "-" + (new Date().getDate() - Number(/(\d+)&nbsp;天前/g.exec(html)[1]))
+                }
+            }
+            allData.push(json)
+        }
+
+        allData = allData.sort(function (item1, item2) {
+            var p1 = new Date(item1.time).getTime()
+            var p2 = new Date(item2.time).getTime()
+            return p1 > p2 ? -1 : 1
+        })
+        allData.forEach(function (json) {
+            if (!/会所/g.test(json.title)) {
+                jianzhiData.push(json)
+                if (!/本帖隐藏的内容需要积分高于 .+ 才可浏览/g.test(json.html)) {
+                    listData.push(json)
+                }
+            }
+        })
+
+        var tpl = fs.readFileSync("list.ejs").toString()
+        var listhtml = Api.parseTpl(tpl, listData)
+        var allhtml = Api.parseTpl(tpl, allData)
+        var jianzhihtml = Api.parseTpl(tpl, jianzhiData)
+        fs.writeFileSync(__dirname + "/list.html", listhtml)
+        fs.writeFileSync(__dirname + "/jianzhi.html", jianzhihtml)
+        fs.writeFileSync(__dirname + "/all.html", allhtml)
+    }
 }))
 
 var test=eval(Wind.compile("async", function (startTask,isneedFresh) {
@@ -270,6 +277,7 @@ var test=eval(Wind.compile("async", function (startTask,isneedFresh) {
     ],false))
 
    $await(getAllhtml())
+   $await(makeStatic())
 
 }))
 test().start()

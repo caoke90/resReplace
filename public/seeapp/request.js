@@ -10,28 +10,44 @@ var request =module.exports= require('request').defaults({
 });
 
 request.getContent=Wind.Async.Binding.fromCallback(function(pathOrUrl,callback) {
-    if(/^https?:\/\//.test(pathOrUrl)){
-        request(pathOrUrl, function (error,response,data) {
-            if(!error) {
-                var body=data.toString();
-                if (/gb(2312|k)/i.test(response.headers['content-type'])||/<meta .*?charset=(["']?)gb(2312|k|18030)\1?/gi.test(body)||/encoding="gbk"/gi.test(body)) {
-                    body = Iconv.decode(data, 'gb2312').toString()
+    var selfFunc=arguments.callee
+    request(pathOrUrl, function (error,response,data) {
+        if(!error) {
+            var html=data.toString()
+            //防止爬虫
+            if(/<html><body><script/.test(html)){
+                console.log("反爬虫")
+                console.log(html)
+                var other={
+                    window:{}
                 }
-                callback(body)
-            }else{
-                callback("")
+                with(other){
+                    eval(/<script language="javascript">([\d\D]+)<\/script>/.exec(html)[1])
+                }
+                if(typeof other.window.location=="string"){
+                    var cururl="http://www.168ytt.com"+other.window.location
+                    selfFunc(cururl,callback)
+                }else{
+                    throw "error";
+                }
+
+                return;
             }
-        })
-    }else{
-        var buf=fs.readFileSync(pathOrUrl)
-        callback(buf.toString());
-    }
+            if (/gb(2312|k)/i.test(response.headers['content-type'])||/<meta .*?charset=(["']?)gb(2312|k|18030)\1?/gi.test(html)||/encoding="gbk"/gi.test(html)) {
+                html = Iconv.decode(data, 'gb2312').toString()
+            }
+            callback(html)
+        }else{
+            callback("")
+        }
+    })
 
 })
 
 request.postGbk=Wind.Async.Binding.fromCallback(function(pathOrUrl,callback) {
 
     request.post(pathOrUrl, function (error,response,data) {
+
         if(!error) {
             var body=data.toString();
             if (/gb(2312|k)/i.test(response.headers['content-type'])||/<meta .*?charset=(["']?)gb(2312|k|18030)\1?/gi.test(body)||/encoding="gbk"/gi.test(body)) {

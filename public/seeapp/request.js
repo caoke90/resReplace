@@ -52,8 +52,19 @@ request.getBase64=Wind.Async.Binding.fromCallback(function(pathOrUrl,callback) {
         if(/<html><body><script/.test(html)){
             console.log("反爬虫")
             console.log(html)
-            var cururl="http://www.168ytt.com"+eval(/window\.location=([\d\D]+);/.exec(html)[1])
-            selfFunc(cururl,callback)
+            var other={
+                window:{}
+            }
+            with(other){
+                eval(/<script language="javascript">([\d\D]+)<\/script>/.exec(html)[1])
+            }
+            if(typeof other.window.location=="string"){
+                var cururl="http://www.168ytt.com"+other.window.location
+                selfFunc(cururl,callback)
+            }else{
+                throw "error";
+            }
+
             return;
         }
         if(!error) {

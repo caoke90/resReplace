@@ -301,7 +301,7 @@ var test=eval(Wind.compile("async", function (startTask,isneedFresh) {
         "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=57&page=1&mobile=2",
         "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=58&page=1&mobile=2",
         "http://www.168ytt.com/forum.php?mod=forumdisplay&fid=70&page=1&mobile=2"
-    ],false))
+    ],true))
 
    $await(getAllhtml())
    $await(makeStatic())

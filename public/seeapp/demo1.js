@@ -247,7 +247,7 @@ var makeStatic=eval(Wind.compile("async",function(){
             html = html.replace(/m3m4_ck/g, '')
             html = html.replace(/<?xml version="1.0" encoding="utf-8"\?>/g, '')
             if (!fs.existsSync(releaseDir + "/nye/" + tid + ".html")) {
-                html=$await(imageTobase64(html))
+//                html=$await(imageTobase64(html))
                 fs.writeFileSync(releaseDir + "/nye/" + tid + ".html", html)
             }
             var json = {
@@ -305,6 +305,7 @@ var test=eval(Wind.compile("async", function (startTask,isneedFresh) {
 
    $await(getAllhtml())
    $await(makeStatic())
+    console.log("over")
 
 }))
 test().start()

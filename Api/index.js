@@ -10,6 +10,7 @@ var Api=module.exports={
     parseTpl:require("./parseTpl"),
     render:require("./render"),
     getData:require("./getData"),
+    Task:require("./Task"),
 };
 
 var redis = require("redis");

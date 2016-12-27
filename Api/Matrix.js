@@ -194,7 +194,7 @@
     //获取数组的某一列的所有值
     function _getColumn( arr, shape, j ) {
         var result = [];
-        for ( i = 0; i < shape[0]; i++ ) {
+        for (var i = 0; i < shape[0]; i++ ) {
             result.push( _getItem( arr, i, j ) );
         }
         return result;
@@ -227,6 +227,7 @@
     }
 })(global);
 module.exports=Matrix;
+
 //var b = Matrix.ones( 4,3 );
 //console.log(Matrix.toString(b))
 //b=Matrix.transpose(b)

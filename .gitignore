@@ -1,2 +1,4 @@
 /Api/redis/*.rdb
 /Api/redis/dump.rdb
+/public/seeApp/seeapp2
+/public/seeApp/seeapp

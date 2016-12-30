@@ -93,7 +93,8 @@ var getAllhtml=eval(Wind.compile("async", function (startTask,isneedFresh) {
 
     //提取了那些url
     var taskData=Api.Task(JSON.parse(fs.readFileSync("tidData.txt").toString()))
-
+//    taskData.taskList=taskData.completeList
+//    taskData.completeList=[]
     var ok=true
     while(ok&&taskData.get()){
         var tid=taskData.get()
@@ -227,7 +228,7 @@ var makeStatic=eval(Wind.compile("async",function(){
             html = html.replace(/m3m4_ck/g, '')
             html = html.replace(/<?xml version="1.0" encoding="utf-8"\?>/g, '')
             if (!fs.existsSync(releaseDir + "/nye/" + tid + ".html")) {
-//                html=$await(imageTobase64(html))
+                html=$await(imageTobase64(html))
                 fs.writeFileSync(releaseDir + "/nye/" + tid + ".html", html)
             }
             var json = {

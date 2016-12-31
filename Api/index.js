@@ -11,6 +11,7 @@ var Api=module.exports={
     render:require("./render"),
     getData:require("./getData"),
     Task:require("./Task"),
+    getAllUrl:require("./getAllUrl"),
 };
 
 var redis = require("redis");

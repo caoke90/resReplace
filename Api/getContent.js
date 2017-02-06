@@ -16,6 +16,9 @@ var getContent=Wind.Async.Binding.fromCallback(function(pathOrUrl,callback) {
                 var body=data.toString();
                 if (/gb(2312|k)/i.test(response.headers['content-type'])||/<meta .*?charset=(["']?)gb(2312|k|18030)\1?/gi.test(body)||/encoding="gbk"/gi.test(body)) {
                     body = Iconv.decode(data, 'gb2312').toString()
+                    body=body.replace(/<meta .*?charset=(["']?)gb(2312|k|18030)\1?/gi,function(m){
+                        return m.replace(/gb(2312|k|18030)/i,"utf-8")
+                    })
                 }
                 callback(body)
             }else{

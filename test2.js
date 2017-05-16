@@ -200,7 +200,7 @@ var paiming=eval(Wind.compile("async", function (time) {
 }))
 //paiming().start()
 
-var test3=eval(Wind.compile("async", function (time) {
+var test3=eval(Wind.compile("async", function (time,num) {
 
     var list2=getCvs("非债开放申购开放赎回.csv")
     var title=list2.shift()
@@ -302,7 +302,7 @@ var test3=eval(Wind.compile("async", function (time) {
     saveCvs("排行/累计收益排名"+time.join("-")+"天.csv",list1)
 
     saveCvs("排行/性价比排名"+time.join("-")+"天.csv",list7)
-    fs.writeFileSync("图形/data.json",JSON.stringify(dataJSON,null,2))
+    fs.writeFileSync("图形/data"+num+".json",JSON.stringify(dataJSON,null,2))
 }))
 
 //test3([1,10]).start()
@@ -310,7 +310,7 @@ var test3=eval(Wind.compile("async", function (time) {
 //test3([1,30]).start()
 //test3([1,2]).start()
 //test3([1,2]).start()
-test3([1,10]).start()
+//test3([1,10]).start()
 //test3([1,20]).start()
 //test3([1,40]).start()
 //test3([1,60]).start()
@@ -329,8 +329,10 @@ test3([1,10]).start()
 //test3([2,3]).start()
 //test3([1,200]).start()
 //test3([30,60]).start()
-//test3([1,2]).start()
-//test3([2,3]).start()
-//test3([3,4]).start()
+test3([1,2],1).start()
+test3([2,3],2).start()
+test3([3,4],3).start()
+test3([4,5],4).start()
+test3([5,6],5).start()
 //test3([60,90]).start()
 //test3([90,120]).start()
